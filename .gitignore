@@ -1,0 +1,3 @@
+# Keep files local - do not push to GitHub
+*.txt
+!README.md
