@@ -1,0 +1,21 @@
+{
+    "[markdown]": {
+        "editor.rulers": [
+            50,
+            72,
+            80,
+            120
+        ],
+        "editor.wordWrap": "on",
+        "editor.wordWrapColumn": 120
+    },
+    "[python]": {
+        "editor.rulers": [
+            79,
+            88,
+            120
+        ],
+        "editor.wordWrap": "on",
+        "editor.wordWrapColumn": 120
+    }
+}

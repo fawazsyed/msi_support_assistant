@@ -1,3 +1,12 @@
 # Keep files local - do not push to GitHub
 *.txt
 !README.md
+
+# Python virtual environment (generated locally)
+.venv/
+
+# Research data folder (never stage)
+research/
+
+# Copilot instructions (workspace-specific, keep local)
+.github/copilot-instructions.md
