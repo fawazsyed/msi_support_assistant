@@ -2,6 +2,9 @@
 *.txt
 !README.md
 
+# Environment variables with API keys
+.env
+
 # Python virtual environment (generated locally)
 .venv/
 
