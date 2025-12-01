@@ -2,6 +2,12 @@
 *.txt
 !README.md
 
+# Commit message file (local only)
+COMMIT.md
+
+# Vector database (generated locally, too large for git)
+chroma_langchain_db/
+
 # Environment variables with API keys
 .env
 
