@@ -129,7 +129,7 @@ async def main():
         # Get tools from MCP server
         mcp_tools = await client.get_tools()
         logger.info(f"Loaded {len(mcp_tools)} MCP tools: {[t.name for t in mcp_tools]}")
-    except ConnectionError:
+    except (ConnectionError, TimeoutError, OSError):
         logger.error("Failed to connect to MCP servers. Ensure weather server is running on port 8000.")
         raise
     except Exception:
