@@ -5,7 +5,7 @@ This crawler is specifically designed for docs.motorolasolutions.com structure:
 1. Takes a "table of contents" page (like bundle/89303/page/23111842.html)
 2. Extracts all navigation links to sub-pages in the same bundle
 3. Crawls each sub-page individually
-4. Creates a JSON entry for each with: title, URL, content snippet, and LLM-generated description
+4. Creates a JSON entry for each with: title, URL, and full content
 
 Usage:
     python src/motorola_crawler.py
@@ -139,10 +139,12 @@ async def extract_navigation_links(toc_url: str) -> List[Dict[str, str]]:
 
 async def crawl_single_page(url: str, nav_text: str = None, max_retries: int = 2) -> Dict:
     """
-    Crawl a single documentation page.
+    Crawl a single documentation page and extract full content.
+    
+    The text splitter will handle chunking, so we extract the complete page content.
     
     Args:
-        url: Page URL (may include anchor like #section-id)
+        url: Page URL
         nav_text: Text from navigation link (fallback for title)
         max_retries: Number of retry attempts for failed requests
         
@@ -154,8 +156,8 @@ async def crawl_single_page(url: str, nav_text: str = None, max_retries: int = 2
     
     browser_config = BrowserConfig(headless=True, verbose=False)
     crawler_config = CrawlerRunConfig(
-        page_timeout=45000,  # Increased timeout
-        delay_before_return_html=3.0,  # Longer delay to avoid rate limiting
+        page_timeout=45000,
+        delay_before_return_html=3.0,
         word_count_threshold=10
     )
     
@@ -168,7 +170,6 @@ async def crawl_single_page(url: str, nav_text: str = None, max_retries: int = 2
             result = await crawler.arun(url, config=crawler_config)
             
             if result.success:
-                # Extract meaningful content
                 content = result.markdown.raw_markdown
                 html = result.html
                 
@@ -176,7 +177,7 @@ async def crawl_single_page(url: str, nav_text: str = None, max_retries: int = 2
                 if "Request unsuccessful" in content or "Incapsula incident ID" in content:
                     last_error = "Security block (WAF/CDN)"
                     if attempt < max_retries:
-                        await asyncio.sleep(3)  # Wait before retry
+                        await asyncio.sleep(3)
                         continue
                     else:
                         return {
@@ -200,17 +201,69 @@ async def crawl_single_page(url: str, nav_text: str = None, max_retries: int = 2
             "error_message": last_error or "Unknown error"
         }
     
-    # Clean content - remove cookie banners, navigation, etc.
+    # Clean content - remove noise elements
     soup = BeautifulSoup(html, 'html.parser')
     
-    # Remove common noise elements
+    # Remove scripts, styles, navigation, headers, footers
     for element in soup.find_all(['script', 'style', 'nav', 'header', 'footer']):
         element.decompose()
     
-    # Remove cookie banners and privacy notices
-    for element in soup.find_all(text=lambda text: text and ('cookie' in text.lower() or 'privacy statement' in text.lower())):
-        if element.parent and len(element) > 100:  # Only remove long cookie notices
-            element.parent.decompose()
+    # Remove site-wide filter navigation (product categories, releases, etc.)
+    # Collect parents first to avoid decomposing while iterating
+    parents_to_remove = []
+    
+    # Remove filter navigation
+    for text_node in soup.find_all(string=re.compile(r'Filters|Clear All Filters', re.IGNORECASE)):
+        parent = text_node.find_parent(['div', 'aside', 'section'])
+        if parent and parent not in parents_to_remove:
+            parents_to_remove.append(parent)
+    
+    # Remove sharing/action buttons
+    for text_node in soup.find_all(string=re.compile(r'Add to My Topics|Add Entire Publication|Save PDF|Share to email|Share Feedback', re.IGNORECASE)):
+        parent = text_node.find_parent(['div', 'nav', 'section'])
+        if parent and parent not in parents_to_remove:
+            parents_to_remove.append(parent)
+    
+    # Remove language selector
+    for text_node in soup.find_all(string=re.compile(r'English|Deutsch|Français|Português \(Brasil\)', re.IGNORECASE)):
+        parent = text_node.find_parent(['div', 'select', 'ul'])
+        if parent and parent.get('class') and any('lang' in str(c).lower() for c in parent.get('class')):
+            if parent not in parents_to_remove:
+                parents_to_remove.append(parent)
+    
+    # Remove "Expand Collapse" navigation controls
+    for text_node in soup.find_all(string=re.compile(r'Expand Collapse', re.IGNORECASE)):
+        parent = text_node.find_parent()
+        if parent and parent not in parents_to_remove:
+            parents_to_remove.append(parent)
+    
+    # Remove table of contents navigation (left sidebar)
+    for element in soup.find_all(['aside', 'div'], class_=lambda c: c and any(x in str(c).lower() for x in ['sidebar', 'toc', 'nav', 'menu'])):
+        if element not in parents_to_remove:
+            parents_to_remove.append(element)
+    
+    # Remove feedback sections ("Was this topic helpful?")
+    for text_node in soup.find_all(string=re.compile(r'Was this topic helpful|Like|Dislike|Log in to get a better experience', re.IGNORECASE)):
+        parent = text_node.find_parent(['div', 'section', 'footer'])
+        if parent and parent not in parents_to_remove:
+            parents_to_remove.append(parent)
+    
+    # Remove "Current page" breadcrumb markers
+    for text_node in soup.find_all(string=re.compile(r'Current page|Table of contents', re.IGNORECASE)):
+        parent = text_node.find_parent()
+        if parent and parent not in parents_to_remove:
+            parents_to_remove.append(parent)
+    
+    # Remove cookie/privacy notices
+    for text_node in soup.find_all(string=lambda text: text and ('cookie' in text.lower() or 'privacy statement' in text.lower())):
+        if len(str(text_node)) > 100:
+            parent = text_node.find_parent()
+            if parent and parent not in parents_to_remove:
+                parents_to_remove.append(parent)
+    
+    # Now remove all collected parents
+    for parent in parents_to_remove:
+        parent.decompose()
     
     # Get title - use nav_text as primary since it's from "What's New"
     if nav_text:
@@ -220,45 +273,61 @@ async def crawl_single_page(url: str, nav_text: str = None, max_retries: int = 2
         if ' — ' in title:
             title = title.split(' — ')[0]
     
-    # If URL has anchor, try to extract that specific section
-    section_content = None
+    # Check if URL has an anchor (section link)
+    anchor_id = None
     if '#' in url:
-        anchor = url.split('#')[1]
-        section = soup.find(id=anchor)
-        
-        if section:
-            # Get content from this section
-            content_parts = [section.get_text(strip=True)]
-            for sibling in section.find_next_siblings():
-                if sibling.name in ['h1', 'h2', 'h3', 'h4']:
-                    break
-                text = sibling.get_text(strip=True)
-                if text:
-                    content_parts.append(text)
-            
-            section_content = ' '.join(content_parts)
+        anchor_id = url.split('#')[1]
     
-    # If no section found or no anchor, extract main content area
-    if not section_content:
-        # Try to find main content container
+    # Extract content - target specific section if anchor exists
+    if anchor_id:
+        # Try to find the specific section by ID
+        target_section = soup.find(id=anchor_id)
+        
+        if target_section:
+            # Extract this section and its content until the next same-level heading
+            section_content = []
+            section_content.append(target_section.get_text(separator=' ', strip=True))
+            
+            # Get all siblings after this section until next major section
+            current = target_section.find_next_sibling()
+            while current:
+                # Stop at next section with same heading level
+                if current.name in ['section', 'div'] and current.get('id'):
+                    break
+                # Stop at next major heading
+                if current.name in ['h1', 'h2', 'h3']:
+                    break
+                
+                section_content.append(current.get_text(separator=' ', strip=True))
+                current = current.find_next_sibling()
+            
+            full_content = ' '.join(section_content)
+        else:
+            # Fallback: couldn't find anchor, use full page
+            main_content = soup.find(['main', 'article']) or soup.find(class_=lambda c: c and 'content' in c.lower())
+            if main_content:
+                full_content = main_content.get_text(separator=' ', strip=True)
+            else:
+                full_content = soup.get_text(separator=' ', strip=True)
+    else:
+        # No anchor - extract full page content
         main_content = soup.find(['main', 'article']) or soup.find(class_=lambda c: c and 'content' in c.lower())
         
         if main_content:
-            section_content = main_content.get_text(separator=' ', strip=True)
+            full_content = main_content.get_text(separator=' ', strip=True)
         else:
             # Fallback to cleaned HTML text
-            section_content = soup.get_text(separator=' ', strip=True)
+            full_content = soup.get_text(separator=' ', strip=True)
     
     # Final cleanup - remove excessive whitespace
-    section_content = ' '.join(section_content.split())
+    full_content = ' '.join(full_content.split())
     
     return {
         "title": title,
         "url": url,
         "nav_text": nav_text,
-        "content_snippet": section_content[:1500],
-        "full_content": section_content,
-        "content_length": len(section_content),
+        "full_content": full_content,
+        "content_length": len(full_content),
         "source_type": "motorola_docs",
         "crawled_at": datetime.now().isoformat()
     }
@@ -317,57 +386,6 @@ async def crawl_documentation_bundle(toc_url: str, max_pages: int = None) -> Lis
     return documents
 
 
-async def generate_descriptions(documents: List[Dict]) -> List[Dict]:
-    """
-    Generate searchable descriptions for each document using LLM.
-    
-    Args:
-        documents: List of document dictionaries
-        
-    Returns:
-        Same list with 'description' field added
-    """
-    from langchain_openai import ChatOpenAI
-    from langchain_core.prompts import ChatPromptTemplate
-    
-    print(f"\n[+] Generating descriptions with GPT-4o-mini...")
-    
-    llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
-    
-    prompt = ChatPromptTemplate.from_template(
-        """You are analyzing Motorola technical documentation.
-        Generate a concise 2-3 sentence description that:
-        1. Explains what this page/section covers
-        2. Lists key features, procedures, or functionality described
-        3. Uses terminology that users would search for (e.g., "password reset", "firmware update", "device configuration")
-        
-        Page Title: {title}
-        Navigation Context: {nav_text}
-        Content Preview: {content}
-        
-        Description (2-3 sentences):"""
-    )
-    
-    for i, doc in enumerate(documents, 1):
-        try:
-            response = await llm.ainvoke(
-                prompt.format_messages(
-                    title=doc["title"],
-                    nav_text=doc.get("nav_text", ""),
-                    content=doc["content_snippet"]
-                )
-            )
-            doc["description"] = response.content.strip()
-            print(f"    [{i}/{len(documents)}] {doc['title'][:50]}")
-            
-        except Exception as e:
-            print(f"    [{i}/{len(documents)}] [X] Failed: {e}")
-            doc["description"] = doc["content_snippet"][:200]  # Fallback
-    
-    print(f"[+] Generated {len(documents)} descriptions")
-    return documents
-
-
 def save_documents(documents: List[Dict], filename: str = "motorola_docs.json"):
     """Save crawled documents to JSON file."""
     output_path = PROJECT_ROOT / "data" / filename
@@ -386,15 +404,12 @@ async def main():
     # Target URL - VideoManager Admin Guide TOC
     toc_url = "https://docs.motorolasolutions.com/bundle/89303/page/23111842.html"
     
-    # Crawl all pages from "What's New" section
-    documents = await crawl_documentation_bundle(toc_url, max_pages=10)
+    # Crawl pages from "What's New" section, add max_pages=None to crawl all
+    documents = await crawl_documentation_bundle(toc_url, max_pages=None)
     
     if not documents:
         print("\n[X] No documents crawled")
         return
-    
-    # Generate descriptions
-    documents = await generate_descriptions(documents)
     
     # Save to file
     save_documents(documents, "motorola_docs.json")
@@ -409,7 +424,7 @@ async def main():
     for i, doc in enumerate(documents[:3], 1):
         print(f"\n{i}. {doc['title']}")
         print(f"   URL: {doc['url']}")
-        print(f"   Description: {doc['description']}")
+        print(f"   Content length: {doc['content_length']} chars")
     
     print(f"\n[+] Complete! Run prototype_indexer.py to build the search index.")
 

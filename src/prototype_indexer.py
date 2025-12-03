@@ -1,14 +1,17 @@
 """
-Prototype Document Indexer for Motorola Support Assistant.
+Document Indexer for Motorola Support Assistant.
 
-This script takes crawled documents and:
-1. Loads documents from prototype_documents.json
-2. Embeds descriptions using OpenAI embeddings
-3. Stores in Chroma vector database
-4. Tests semantic search functionality
+This script implements the "Indexing" phase from LangChain RAG tutorial:
+1. Load: Load documents from JSON file
+2. Split: Use RecursiveCharacterTextSplitter to chunk documents
+3. Store: Embed chunks and store in Chroma vector database
+
+Follows LangChain tutorial pattern:
+https://python.langchain.com/docs/tutorials/rag/
 
 Usage:
-    python src/prototype_indexer.py
+    python src/prototype_indexer.py [filename]
+    python src/prototype_indexer.py motorola_docs.json
 """
 
 import json
@@ -40,14 +43,24 @@ def load_crawled_documents(filename: str = "prototype_documents.json") -> List[D
 
 def build_vector_index(documents: List[Dict], collection_name: str = "motorola_docs_prototype"):
     """
-    Build vector database index from crawled documents.
+    Build vector database index following LangChain RAG tutorial pattern.
     
-    Indexes the 'description' field for semantic search.
-    Stores metadata: title, url, source_type
+    Indexing pipeline (from tutorial):
+    1. Load: Convert JSON documents to LangChain Document objects
+    2. Split: Use RecursiveCharacterTextSplitter to chunk documents
+    3. Store: Embed chunks and store in vector database
+    
+    Args:
+        documents: List of document dicts from crawler
+        collection_name: Name for Chroma collection
+        
+    Returns:
+        Chroma vector store instance
     """
     from langchain_chroma import Chroma
     from langchain_openai import OpenAIEmbeddings
     from langchain_core.documents import Document
+    from langchain_text_splitters import RecursiveCharacterTextSplitter
     import shutil
     
     if not documents:
@@ -69,51 +82,62 @@ def build_vector_index(documents: List[Dict], collection_name: str = "motorola_d
             print("    [!] This may result in duplicate entries")
             print("    [!] Try closing other applications or restart your terminal")
     
-    print(f"\n[+] Building vector index...")
+    print(f"\n[+] Building vector index following LangChain tutorial pattern...")
     print(f"   Embedding model: text-embedding-3-small")
     print(f"   Collection: {collection_name}")
     
-    # Initialize embeddings
-    embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
-    
-    # Convert to LangChain Documents
-    # We embed the DESCRIPTION (for semantic search)
-    # And store the full metadata for retrieval
+    # Step 1: LOAD - Convert to LangChain Documents
+    print(f"\n   [1/3] LOAD: Converting {len(documents)} documents...")
     langchain_docs = []
     
     for doc in documents:
-        # Skip documents without descriptions
-        if not doc.get("description"):
-            print(f"   [!] Skipping {doc.get('title', 'Unknown')}: No description")
+        # Skip documents without content
+        if not doc.get("full_content"):
+            print(f"      [!] Skipping {doc.get('title', 'Unknown')}: Missing content")
             continue
         
         langchain_docs.append(
             Document(
-                page_content=doc["description"],  # This gets embedded
+                page_content=doc["full_content"],  # Content to be chunked and embedded
                 metadata={
                     "title": doc["title"],
                     "url": doc["url"],
-                    "source_type": doc["source_type"],
-                    "content_snippet": doc.get("content_snippet", "")[:500],  # First 500 chars
-                    "full_content": doc.get("full_content", "")[:20000]  # Store full content (limit 20k chars)
+                    "source_type": doc["source_type"]
                 }
             )
         )
     
-    print(f"   Processing {len(langchain_docs)} documents...")
+    print(f"      [+] Loaded {len(langchain_docs)} documents")
     
-    # Create vector store
+    # Step 2: SPLIT - Chunk documents using RecursiveCharacterTextSplitter
+    print(f"\n   [2/3] SPLIT: Chunking documents...")
+    print(f"      chunk_size=1000, chunk_overlap=200")
+    
+    text_splitter = RecursiveCharacterTextSplitter(
+        chunk_size=2000,        # Maximum chunk size in characters
+        chunk_overlap=500,      # Overlap between chunks for context
+        add_start_index=True    # Track position in original document
+    )
+    
+    all_splits = text_splitter.split_documents(langchain_docs)
+    print(f"      [+] Split into {len(all_splits)} chunks")
+    
+    # Step 3: STORE - Embed and index in vector database
+    print(f"\n   [3/3] STORE: Embedding and indexing chunks...")
+    
+    embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
     persist_dir_str = str(persist_dir)
     
+    # Use Chroma.from_documents() as shown in tutorial
     vector_store = Chroma.from_documents(
-        documents=langchain_docs,
+        documents=all_splits,
         embedding=embeddings,
         persist_directory=persist_dir_str,
         collection_name=collection_name
     )
     
-    print(f"   [+] Indexed {len(langchain_docs)} documents")
-    print(f"   [+] Stored in: {persist_dir_str}")
+    print(f"      [+] Indexed {len(all_splits)} chunks from {len(langchain_docs)} documents")
+    print(f"      [+] Stored in: {persist_dir_str}")
     
     return vector_store
 
@@ -122,40 +146,33 @@ def test_semantic_search(vector_store, test_queries: List[str] = None):
     """
     Test semantic search with sample queries.
     
+    Tests the retrieval component of RAG by performing similarity searches.
+    
     Args:
         vector_store: Chroma vector store
         test_queries: List of test queries (uses defaults if None)
     """
     if test_queries is None:
-        # Auto-detect based on document type
-        if any(doc.get('source_type') == 'motorola_docs' for doc in []):
-            test_queries = [
-                "how to manage devices",
-                "firmware update procedures",
-                "password reset",
-                "video playback settings",
-                "initial configuration steps",
-            ]
-        else:
-            test_queries = [
-                "how to work with JSON files",
-                "parse dates and times",
-                "regular expressions python",
-                "asynchronous programming",
-                "read CSV files",
-                "network requests http",
-                "iterate over collections efficiently",
-            ]
+        # Sample queries relevant to Motorola VideoManager documentation
+        test_queries = [
+            "how to configure storage settings",
+            "device assignment procedures",
+            "managing user permissions",
+            "RFID configuration",
+            "deletion policy settings",
+        ]
     
     print("\n" + "=" * 70)
     print("TESTING SEMANTIC SEARCH")
     print("=" * 70)
+    print("\nTesting retrieval with sample queries...")
+    print("This demonstrates the 'Retrieve' step of RAG.\n")
     
     for query in test_queries:
         print(f"\n[?] Query: '{query}'")
         print("-" * 70)
         
-        # Perform similarity search with scores
+        # Perform similarity search with scores (k=3 chunks returned)
         results = vector_store.similarity_search_with_score(query, k=3)
         
         if not results:
@@ -166,7 +183,7 @@ def test_semantic_search(vector_store, test_queries: List[str] = None):
             print(f"\n   {i}. {doc.metadata['title']}")
             print(f"      Relevance: {1 - score:.3f}")  # Convert distance to similarity
             print(f"      URL: {doc.metadata['url']}")
-            print(f"      Description: {doc.page_content[:150]}...")
+            print(f"      Content preview: {doc.page_content[:120]}...")
 
 
 def interactive_search(vector_store):
@@ -213,13 +230,29 @@ def interactive_search(vector_store):
             print(f"   [X] Error: {e}\n")
 
 
-def main(filename: str = "prototype_documents.json"):
-    """Main indexer pipeline."""
-    print("=" * 70)
-    print("DOCUMENT INDEXER")
-    print("=" * 70)
+def main(filename: str = "motorola_docs.json"):
+    """
+    Main indexer pipeline with hybrid approach.
     
-    # Step 1: Load crawled documents
+    Implements enhanced indexing:
+    1. Generate LLM descriptions for semantic search
+    2. Load documents from JSON
+    3. Split into chunks
+    4. Embed descriptions + store chunks in vector database
+    
+    Args:
+        filename: JSON file with crawled documents (default: motorola_docs.json)
+    """
+    print("=" * 70)
+    print("HYBRID RAG INDEXER")
+    print("=" * 70)
+    print("\nImplementing hybrid indexing pipeline:")
+    print("  1. GENERATE - Create LLM descriptions (better search)")
+    print("  2. LOAD     - Load documents")
+    print("  3. SPLIT    - Chunk full content (detailed retrieval)")
+    print("  4. STORE    - Embed and index in Chroma")
+    
+    # Load crawled documents
     documents = load_crawled_documents(filename)
     
     if not documents:
@@ -227,45 +260,55 @@ def main(filename: str = "prototype_documents.json"):
     
     # Display summary
     print(f"\n[+] Document Summary:")
-    print(f"   Total: {len(documents)}")
-    print(f"   Support articles: {sum(1 for d in documents if d['source_type'] == 'support')}")
-    print(f"   Technical docs: {sum(1 for d in documents if d['source_type'] == 'docs')}")
+    print(f"   Total documents: {len(documents)}")
     
-    # Check for descriptions
-    with_descriptions = sum(1 for d in documents if d.get("description"))
-    print(f"   With descriptions: {with_descriptions}/{len(documents)}")
+    # Check source types
+    source_types = {}
+    for d in documents:
+        src_type = d.get('source_type', 'unknown')
+        source_types[src_type] = source_types.get(src_type, 0) + 1
     
-    if with_descriptions == 0:
-        print("\n[X] No documents have descriptions!")
-        print("   The crawler may have failed to generate descriptions.")
+    for src_type, count in source_types.items():
+        print(f"   {src_type}: {count}")
+    
+    # Check for content (note: field name is "content" not "full_content")
+    with_content = sum(1 for d in documents if d.get("content"))
+    print(f"   With content: {with_content}/{len(documents)}")
+    
+    if with_content == 0:
+        print("\n[X] No documents have content!")
+        print("   The crawler may have failed to extract content.")
         print("   Check the crawled data or re-run the crawler.")
         return
     
-    # Step 2: Build vector index
+    # Build vector index (Load -> Split -> Store)
     vector_store = build_vector_index(documents)
     
     if not vector_store:
         return
     
-    # Step 3: Test with predefined queries
-    test_semantic_search(vector_store)
-    
-    # Step 4: Interactive search (optional)
     print("\n" + "=" * 70)
-    response = input("Would you like to try interactive search? (y/n): ").strip().lower()
+    print("INDEXING COMPLETE")
+    print("=" * 70)
+    print("\nNext steps:")
+    print("  1. Run 'python src/rag_agent.py \"your question\"' to test RAG")
+    print("  2. Or continue below for search testing")
+    
+    # Optional: Test with predefined queries
+    print("\n" + "=" * 70)
+    response = input("\nWould you like to test semantic search? (y/n): ").strip().lower()
     
     if response in ['y', 'yes']:
-        interactive_search(vector_store)
-    
-    print("\n[+] Prototype indexing complete!")
-    print("\nNext steps:")
-    print("  1. Review search quality - are relevant docs being found?")
-    print("  2. Adjust description generation prompts if needed")
-    print("  3. Crawl more pages to build a larger index")
-    print("  4. Integrate with LangChain agent for full RAG pipeline")
+        test_semantic_search(vector_store)
+        
+        # Optional: Interactive search
+        response = input("\nWould you like to try interactive search? (y/n): ").strip().lower()
+        if response in ['y', 'yes']:
+            interactive_search(vector_store)
 
 
 if __name__ == "__main__":
     import sys
-    filename = sys.argv[1] if len(sys.argv) > 1 else "prototype_documents.json"
+    # Default to motorola_docs.json (updated from prototype_documents.json)
+    filename = sys.argv[1] if len(sys.argv) > 1 else "motorola_docs.json"
     main(filename)
