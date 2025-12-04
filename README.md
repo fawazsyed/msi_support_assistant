@@ -24,13 +24,14 @@ uv run src/main.py
 
 ## 📋 Project Overview
 
-This project implements a RAG (Retrieval-Augmented Generation) system that:
-- Indexes Motorola Solutions product documentation
-- Retrieves relevant context using vector similarity search
-- Generates accurate answers using OpenAI's GPT-4o
-- Provides observability through LangSmith tracing
+Agentic RAG system with multi-transport MCP integration:
+- **Agentic RAG**: LLM decides when to search documentation (tool-based, not middleware)
+- **Multi-Transport MCP**: Supports stdio (local) and HTTP (remote) MCP servers
+- **Vector Search**: Chroma-based similarity search with persistent storage
+- **Rate Protection**: Client-side rate limiting + tool call limits
+- **Multi-Model**: GPT-4o-mini (default), GPT-4o, Claude 3.5 Sonnet, Gemini 2.0 Flash
 
-**Current Status:** In development - Core RAG functionality implemented with document chunking
+**Status:** Core agentic RAG + MCP integration complete
 
 ---
 
@@ -38,12 +39,13 @@ This project implements a RAG (Retrieval-Augmented Generation) system that:
 
 - **Language**: Python 3.12.10
 - **Package Manager**: uv
-- **LLM**: OpenAI GPT-4o
+- **LLM**: GPT-4o-mini (default), Claude 3.5 Sonnet, GPT-4o, Gemini 2.0 Flash
 - **Embeddings**: OpenAI text-embedding-3-small
-- **Vector Store**: Chroma (persistent, local)
-- **Framework**: LangChain
+- **Vector Store**: Chroma (persistent)
+- **Framework**: LangChain + LangChain MCP Adapters
+- **MCP**: FastMCP 2.13.2 (stdio + HTTP transport)
 - **Observability**: LangSmith (optional)
-- **RAG Architecture**: Dynamic prompt middleware with similarity search
+- **RAG Architecture**: Agentic (tool-based)
 
 ---
 
@@ -51,22 +53,18 @@ This project implements a RAG (Retrieval-Augmented Generation) system that:
 
 ```
 msi-ai-assistant/
-├── src/                    # Source code
-│   ├── main.py             # Main RAG application
-│   └── utils.py            # Logging and utility functions
-├── documents/              # Knowledge base documents (~90K tokens total)
-│   ├── video_manager_admin_guide.txt        (~75K tokens, 357K chars)
-│   └── video_manager_admin_guide_user.txt   (~15K tokens, 70K chars)
-├── logs/                   # Application logs (not in git)
-│   └── archive/            # Archived logs
-├── tests/                  # Test outputs and validation
-├── dev_resources/          # Development references
-├── research/               # Research data (not in git)
-├── chroma_langchain_db/    # Persistent vector store (not in git)
-├── pyproject.toml          # Project dependencies
-├── .env                    # API keys (not in git)
-├── .env.example            # Template for .env
-├── GETTING_STARTED.md      # Complete setup guide
+├── src/
+│   ├── main.py             # Agentic RAG with MCP tools
+│   ├── mcp_server.py       # Math MCP server (stdio)
+│   ├── weather_server.py   # Weather MCP server (HTTP)
+│   └── utils.py            # Logging utilities
+├── documents/              # Knowledge base (~90K tokens)
+├── chroma_langchain_db/    # Vector store (not in git)
+├── logs/                   # Auto-archived logs (not in git)
+├── pyproject.toml          # Dependencies (FastMCP, LangChain, etc.)
+├── .env.example            # API key template
+├── GETTING_STARTED.md      # Setup guide
+├── RATE_LIMITING_GUIDE.md  # Cost protection guide
 └── README.md               # This file
 ```
 
@@ -74,62 +72,56 @@ msi-ai-assistant/
 
 ## 🎯 Key Features
 
-- ✅ **Document Chunking**: RecursiveCharacterTextSplitter (1000 chars, 200 overlap)
-- ✅ **Persistent Vector Store**: Chroma with local persistence
-- ✅ **LangSmith Tracing**: Full observability of RAG pipeline
-- ✅ **Auto-archived Logging**: Timestamped logs with automatic archiving
-- ✅ **Team Collaboration**: Shared LangSmith workspace support
+- ✅ **Agentic RAG**: Tool-based retrieval (only searches when needed)
+- ✅ **Multi-Transport MCP**: stdio (local) + HTTP (remote) servers
+- ✅ **Rate Protection**: 2 RPS limit + 15 tool call cap
+- ✅ **Document Chunking**: 1500 chars, 300 overlap
+- ✅ **Persistent Vector Store**: Chroma with local storage
+- ✅ **Multi-Model Support**: GPT-4o-mini, Claude, Gemini
 
 ---
 
 ## 📚 Requirements
 
-- **Python 3.12.10** (NOT 3.13.x - compatibility issues)
-- **OpenAI API Key** (required for LLM and embeddings)
-- **LangSmith API Key** (optional but recommended for observability)
+- **Python 3.12.10** (NOT 3.13.x)
+- **At least one LLM API key**: OpenAI (recommended), Anthropic, or Google
+- **Budget limits configured** (see [RATE_LIMITING_GUIDE.md](RATE_LIMITING_GUIDE.md))
+- **LangSmith API Key** (optional)
 
-**Full setup instructions:** [GETTING_STARTED.md](GETTING_STARTED.md)
+**Setup:** [GETTING_STARTED.md](GETTING_STARTED.md)
 
 ---
 
-## 🧪 Testing
+## 🧪 Usage
 
-Test outputs are documented in the `tests/` folder for validation and debugging.
+### Start Weather Server (Terminal 1)
+```bash
+uv run python src/weather_server.py
+```
 
-### Recent Tests
+### Run Agentic RAG (Terminal 2)
+```bash
+uv run src/main.py
+```
 
-**Test 01: Base RAG Implementation**
-- Query: "How do I add a new user?"
-- Status: ✓ PASSED
-- Configuration: k=2 similarity search, Chroma persistence
-- Result: Generated accurate 16-step instructions
-
-**Test 02: Document Chunking**
-- Status: ✓ PASSED  
-- Configuration: RecursiveCharacterTextSplitter (chunk_size=1000, chunk_overlap=200)
-- Result: ~30-40 chunks from 23,400-token document
-- Improvement: Eliminates rate limit errors, enables better context retrieval
-
-See `tests/` folder for complete test outputs and evaluations.
+### Example Queries
+- **RAG**: "How do I add a new user?" → Searches MSI docs
+- **Math**: "What is 5 + 3?" → Uses MCP math tool
+- **Weather**: "What's the weather in NYC?" → Uses MCP weather tool
+- **Multi-step**: "What's the magic number times 10?" → Chains MCP tools
 
 ---
 
 ## 🛠️ Development
 
-### Running the Application
 ```bash
-uv run src/main.py
-```
-
-### Project Commands
-```bash
-# Install/update dependencies
+# Install dependencies
 uv sync
 
-# Set Python version
+# Pin Python version
 uv python pin 3.12.10
 
-# Run with specific environment
+# Run with specific .env
 uv run --env-file .env src/main.py
 ```
 
@@ -137,47 +129,35 @@ uv run --env-file .env src/main.py
 
 ## 🤝 Contributing
 
-This is a team project for Motorola Solutions support assistant development.
-
 ### For Team Members
-1. Read [GETTING_STARTED.md](GETTING_STARTED.md) for complete setup
-2. Join the LangSmith workspace (ask team lead for invitation)
-3. Create your own API keys (OpenAI + LangSmith)
-4. Use project name: `msi-ai-assistant` for shared traces
-
-### Best Practices
-- Use LangSmith to track your experiments
-- Add descriptive metadata to traces
-- Document findings in test files
-- Keep `.env` file private (never commit)
+1. Follow [GETTING_STARTED.md](GETTING_STARTED.md)
+2. Read [RATE_LIMITING_GUIDE.md](RATE_LIMITING_GUIDE.md) and set budget limits
+3. Create your own API keys (never share)
+4. Use LangSmith project: `msi-ai-assistant`
 
 ---
 
 ## 🗺️ Roadmap
 
-## 🗺️ Roadmap
-
 ### ✅ Completed
-- Core RAG implementation with LangChain
-- Document chunking (RecursiveCharacterTextSplitter)
-- Persistent vector store (Chroma)
-- LangSmith tracing integration
-- Auto-archived logging (keeps 10 recent, archives older)
-- Team collaboration setup
-
+- Agentic RAG (tool-based retrieval)
+- Multi-transport MCP (stdio + HTTP)
+- Rate limiting + tool call limits
+- Multi-model support (OpenAI, Anthropic, Google)
+- Persistent Chroma vector store
 
 ### 📋 Planned
-- Interactive chat interface
-- MCP (Model Context Protocol) integration
+- FastAPI REST endpoint
+- Streaming responses
 - Web scraping for docs.motorolasolutions.com
-- Real-time document updates
+- Angular UI
 
 ---
 
 ## 📖 Documentation
 
-- **[GETTING_STARTED.md](GETTING_STARTED.md)** - Complete setup guide
-- **tests/** - Test outputs and validations
+- **[GETTING_STARTED.md](GETTING_STARTED.md)** - Setup guide
+- **[RATE_LIMITING_GUIDE.md](RATE_LIMITING_GUIDE.md)** - Cost protection
 
 ---
 

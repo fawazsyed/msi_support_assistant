@@ -9,9 +9,13 @@ dependencies = [
     "langchain-openai>=1.1.0,<2.0",
     "langchain-anthropic>=0.3.0,<0.4",
     "langchain-google-vertexai>=2.0.0,<3.0",
+    "langchain-google-genai>=2.0.0,<3.0",
     "langchain-community>=0.4.1,<0.5",
     "python-dotenv>=1.2.1",
     "langchain-chroma>=1.0.0,<2.0",
     "fastmcp==2.13.2",
     "langchain-mcp-adapters==0.1.14",
+    "fastapi>=0.115.0",
+    "uvicorn>=0.32.0",
+    "sse-starlette>=2.2.1",
 ]

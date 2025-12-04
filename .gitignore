@@ -5,6 +5,9 @@
 # Commit message file (local only)
 COMMIT.md
 
+# Claude Code instructions (workspace-specific, keep local)
+CLAUDE.md
+
 # Vector database (generated locally, too large for git)
 chroma_langchain_db/
 

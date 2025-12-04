@@ -4,8 +4,10 @@ from langchain_openai import OpenAIEmbeddings
 # from langchain_google_vertexai import VertexAIEmbeddings
 from langchain_chroma import Chroma
 from langchain.agents import create_agent
-from langchain.agents.middleware import dynamic_prompt, ModelRequest
+from langchain.agents.middleware import ToolCallLimitMiddleware
 from langchain.chat_models import init_chat_model
+from langchain_core.tools import tool
+from langchain_core.rate_limiters import InMemoryRateLimiter
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from dotenv import load_dotenv
 from utils import setup_logging
@@ -25,27 +27,43 @@ load_dotenv()
 
 async def main():
     """
-    MSI AI Assistant - Conversational RAG system using LangChain.
-    
-    Uses the latest LangChain RAG chain with the following features:
-    - Two-step chain: Always runs search, then generates answer in single LLM call
-    - dynamic_prompt middleware: Injects retrieved context into system message
-    - Single inference per query: Reduced latency vs. agentic approach
-    - Document chunking: RecursiveCharacterTextSplitter (1000 chars, 200 overlap)
-    
+    MSI AI Assistant - Agentic RAG system using LangChain.
+
+    Uses an agentic approach where the LLM decides when to retrieve documentation:
+    - RAG as a Tool: Documentation search is a tool the agent can choose to call
+    - Efficient: Only retrieves docs when needed (not on every query)
+    - Multi-capability: Combines RAG with MCP tools (math, weather, etc.)
+    - Flexible: Agent can retrieve multiple times or skip retrieval for simple queries
+
     Components:
-    - LLM: OpenAI GPT-4o (alternatives: Claude 3.5 Sonnet, Gemini 2.0 Flash)
+    - LLM: Claude 3.5 Sonnet (alternatives: GPT-4o, Gemini 2.0 Flash)
     - Embeddings: OpenAI text-embedding-3-small
     - Vector DB: Chroma for persistent document retrieval
-    - Text Splitter: RecursiveCharacterTextSplitter for optimal chunk size
+    - Text Splitter: RecursiveCharacterTextSplitter (1500 chars, 300 overlap)
+    - Tools: MCP tools + custom RAG documentation search tool
     """
     
+    """RATE LIMITING CONFIGURATION"""
+    # Protect against API overspending with client-side rate limiting
+    rate_limiter = InMemoryRateLimiter(
+        requests_per_second=2,  # 2 requests/second = 120 requests/minute (conservative)
+        check_every_n_seconds=0.1,  # Check every 100ms
+        max_bucket_size=10,  # Allow bursts of up to 10 requests
+    )
+    logger.info("Rate limiter configured: 2 requests/second (120 RPM)")
+
     """LLM CONFIGURATION"""
     # MODEL IN USE:
-    model = init_chat_model("gpt-4o", model_provider="openai")
+    model = init_chat_model(
+        "gpt-4o-mini",
+        model_provider="openai",
+        rate_limiter=rate_limiter  # Add rate limiting to prevent API overspending
+    )
     """Alternative Models"""
-    # model = init_chat_model("claude-3-5-sonnet-20241022", model_provider="anthropic")
-    # model = init_chat_model("gemini-2.0-flash-exp", model_provider="google-vertexai")
+    # model = init_chat_model("gpt-4o", model_provider="openai", rate_limiter=rate_limiter)
+    # model = init_chat_model("claude-3-5-sonnet-20241022", model_provider="anthropic", rate_limiter=rate_limiter)
+    # Gemini (Free tier - requires GOOGLE_API_KEY in .env from https://makersuite.google.com/app/apikey)
+    # model = init_chat_model("gemini-2.0-flash-exp", model_provider="google-genai", rate_limiter=rate_limiter)
 
     """EMBEDDING MODEL"""
     # OpenAI Embeddings (faster than Vertex AI)
@@ -89,24 +107,36 @@ async def main():
     else:
         logger.info("Using existing vector store")
     
-    """STEP 1: Define dynamic prompt with context injection"""
-    # This middleware retrieves documents and injects them into the system message
-    @dynamic_prompt
-    def prompt_with_context(request: ModelRequest) -> str:
-        """Inject retrieved context into system messages."""
-        last_query = request.state["messages"][-1].text
-        retrieved_docs = vector_store.similarity_search(last_query, k=2)
+    """STEP 1: Create RAG tool for documentation search"""
+    # Instead of middleware, we create a tool the agent can choose to call
+    @tool
+    def search_msi_documentation(query: str) -> str:
+        """Search Motorola Solutions product documentation for information.
 
-        docs_content = "\n\n".join(doc.page_content for doc in retrieved_docs)
+        Use this tool when the user asks questions about:
+        - How to use MSI products (Video Manager, etc.)
+        - Product features and capabilities
+        - Configuration and setup instructions
+        - Troubleshooting and support
+        - User management and administration
 
-        system_message = (
-            "You are an MSI Support Assistant. Use the following context from "
-            "Motorola Solutions product documentation to answer the user's question. "
-            "If you don't know the answer based on the context, say so.\n\n"
-            f"Context:\n{docs_content}"
+        Args:
+            query: The search query to find relevant documentation
+
+        Returns:
+            Relevant documentation excerpts that answer the query
+        """
+        retrieved_docs = vector_store.similarity_search(query, k=2)
+
+        if not retrieved_docs:
+            return "No relevant documentation found for this query."
+
+        docs_content = "\n\n---\n\n".join(
+            f"Document excerpt {i+1}:\n{doc.page_content}"
+            for i, doc in enumerate(retrieved_docs)
         )
 
-        return system_message
+        return docs_content
 
     """STEP 2: Load MCP tools from multiple servers"""
     # Configure MCP client with math (stdio) and weather (HTTP) servers
@@ -136,10 +166,29 @@ async def main():
         logger.exception("Failed to load MCP tools")
         raise
     
-    """STEP 3: Create agent with MCP tools AND dynamic prompt middleware"""
-    agent = create_agent(model, 
-                         tools=mcp_tools, 
-                         middleware=[prompt_with_context])
+    """STEP 3: Create agent with MCP tools AND RAG tool"""
+    # Combine MCP tools with our RAG documentation search tool
+    all_tools = mcp_tools + [search_msi_documentation]
+
+    # Create tool call limit middleware to prevent runaway loops and overspending
+    tool_call_limit = ToolCallLimitMiddleware(
+        run_limit=15,  # Max 15 tool calls per single user query
+        exit_behavior="continue"  # Continue and return response when limit hit
+    )
+    logger.info("Tool call limit configured: 15 calls per query")
+
+    agent = create_agent(
+        model,
+        tools=all_tools,
+        middleware=[tool_call_limit],  # Prevent excessive API calls
+        system_prompt=(
+            "You are an MSI Support Assistant powered by Motorola Solutions. "
+            "You have access to product documentation via the search_msi_documentation tool. "
+            "When users ask about MSI products, features, or how-to questions, "
+            "use the search tool to find relevant information before answering. "
+            "Always provide accurate information based on the documentation."
+        )
+    )
     
     """STEP 4: Run the RAG chain with MCP tools available"""
     # Test queries: mix of RAG, math tools, and weather tools
