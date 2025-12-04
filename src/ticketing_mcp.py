@@ -56,18 +56,41 @@ def get_username():
     token: AccessToken | None = get_access_token()
     return token.claims.get("sub") if token else None
 
+
+
 @mcp.tool()
 async def get_username():
+    """
+    Description: Retrieves the active user's username.
+    Use case: Use this tool to retrieve the active user's username as needed. 
+    Permissable roles: Any roles.
+    Arguments: None.
+    Returns: The username as a string.
+    """
     token: AccessToken | None = get_access_token()
     return token.claims.get("sub") if token else None
 
 @mcp.tool()
 async def get_user_roles():
+    """
+    Description: Retrieves the active user's roles.
+    Use case: Use this tool to retrieve the active user's roles as needed. 
+    Permissable roles: Any roles.
+    Arguments: None.
+    Returns: The roles as a list of strings.
+    """
     token: AccessToken | None = get_access_token()
     return token.claims.get("roles") if token else None
 
 @mcp.tool()
 async def get_organizations():
+    """
+    Description: Retrieves the active user's organizations.
+    Use case: Use this tool to retrieve the active user's organizations as needed. 
+    Permissable roles: Any roles.
+    Arguments: None.
+    Returns: The organizations as a list of strings.
+    """
     token: AccessToken | None = get_access_token()
     return token.claims.get("organizations") if token else None
 
