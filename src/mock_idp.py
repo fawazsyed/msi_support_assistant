@@ -2,10 +2,10 @@
 Mock Identity Provider implementation with JWT formatting
 
 Installs:
-pip install uvicorn fastapi jwt pydantic
+pip install uvicorn fastapi jwt pydantic rsa
 
-Run (from project root):
-uvicorn src.mock_IDP:app --host 127.0.0.1 --port 9400
+Run (from mcp-prototype/src):
+uvicorn mock_IDP:app --host 127.0.0.1 --port 9400
 """
 
 import base64
@@ -24,11 +24,33 @@ auth_codes = {}
 users = {
     "test-client": {
         "sub": "test-client",
-        "roles": []
+        "roles": [],
+        "organizations": []
+    },
+    "james_smith": {
+        "sub": "james_smith",
+        "roles": [],
+        "organizations": ["Dallas_Police"]
+    },
+    "linda_baker": {
+        "sub": "linda_baker",
+        "roles": [],
+        "organizations": ["Dallas_Police"]
+    },
+    "terry_jobs": {
+        "sub": "terry_jobs",
+        "roles": [],
+        "organizations": ["Dallas_Police"]
+    },
+    "paul_morgan": {
+        "sub": "paul_morgan",
+        "roles": [],
+        "organizations": ["Allen_Firestation"]
     },
     "admin": {
         "sub": "admin",
-        "roles": ["admin"]
+        "roles": ["admin"],
+        "organizations": []
     }
 }
 
@@ -218,7 +240,8 @@ async def token(
         "iss": ISSUER_URL,
         "aud": resource,
         "sub": user_info["sub"],
-        "roles": user_info["roles"]
+        "roles": user_info["roles"],
+        "organizations": user_info["organizations"]
     }
 
     access_token = jwt.encode(

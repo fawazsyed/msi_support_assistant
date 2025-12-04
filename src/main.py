@@ -124,9 +124,14 @@ async def main():
         client = MultiServerMCPClient(
             {
                 "ticketing": {
-                    "url": "http://127.0.0.1:8000/mcp",
+                    "url": "http://127.0.0.1:9000/mcp",
                     "transport": "streamable_http",
-                    "auth": OAuth(mcp_url = "http://127.0.0.1:8000/mcp")
+                    "auth": OAuth(mcp_url = "http://127.0.0.1:9000/mcp")
+                },
+                "organizations": {
+                    "url": "http://127.0.0.1:9001/mcp",
+                    "transport": "streamable_http",
+                    "auth": OAuth(mcp_url = "http://127.0.0.1:9001/mcp")
                 }
             }
         )

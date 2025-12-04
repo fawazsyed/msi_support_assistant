@@ -2,7 +2,7 @@
 MCP server for managing support tickets
 
 Run (from project root):
-uv run fastmcp run src/ticketing_mcp.py --port 8000
+uv run fastmcp run src/ticketing_mcp.py --port 9000
 """
 
 import pathlib
@@ -57,9 +57,19 @@ def get_username():
     return token.claims.get("sub") if token else None
 
 @mcp.tool()
+async def get_username():
+    token: AccessToken | None = get_access_token()
+    return token.claims.get("sub") if token else None
+
+@mcp.tool()
 async def get_user_roles():
     token: AccessToken | None = get_access_token()
     return token.claims.get("roles") if token else None
+
+@mcp.tool()
+async def get_organizations():
+    token: AccessToken | None = get_access_token()
+    return token.claims.get("organizations") if token else None
 
 @mcp.tool()
 async def create_ticket(
