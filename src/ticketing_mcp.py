@@ -57,10 +57,23 @@ def get_username():
     return token.claims.get("sub") if token else None
 
 @mcp.tool()
+async def get_user_roles():
+    token: AccessToken | None = get_access_token()
+    return token.claims.get("roles") if token else None
+
+@mcp.tool()
 async def create_ticket(
     title: str,
     description: str
-):
+) -> str:
+    """
+    Description: Submits a ticket describing user issues.
+    Use case: Use this tool to submit a ticket for review on behalf of the user.
+    Permissable roles: Any role
+    Arguments: title (required, string), description (required, string).
+    Returns: A string conveying the success of the ticket creation.
+    """
+
     if not title:
         return "Error, no argument given for title"
     
@@ -88,7 +101,15 @@ async def create_ticket(
 async def resolve_ticket(
     ticket_id: int,
     resolution_description: str
-):
+) -> str:
+    """
+    Description: Resolves an unresolved ticket.
+    Use case: Use this tool to resolve a ticket on behalf of the user.
+    Permissable roles: admin.
+    Arguments: ticket_id (required, int), resolution_description (required, string).
+    Returns: A string conveying the success of the ticket resolution.
+    """
+
     if not check_roles(["admin"]):
         return "User does not have permission to use this tool"
 
@@ -136,6 +157,15 @@ async def resolve_ticket(
 async def get_tickets_by_user(
     username: Optional[str] = None
 ) -> Dict[str, Any]:
+    """
+    Description: View tickets created by a particular user. Non-admin users can only
+    view their own tickets.
+    Use case: Use this tool to view all tickets from a particular user.
+    Permissable roles: Any role
+    Arguments: username (optional, string)
+    Returns: A string conveying the success of the ticket resolution.
+    """
+
     # Only admin or the user owning the ticket should be able to view tickets for some user
     this_username = get_username()
     goal_username = username if username else this_username
@@ -181,6 +211,16 @@ async def get_tickets_by_user(
 async def get_tickets_by_status(
     status: Optional[str] = None
 ) -> Dict[str, Any]:
+    """
+    Description: Gets all tickets of a particular status (or all tickets if no status
+    argument provided).
+    Use case: Use this tool to retrieve all tickets of a particular status.
+    Permissable roles: admin.
+    Arguments: status (optional, string).
+    Returns: A dict containing tickets (indexed by ticket_id) or a dict containing
+    an error message if call was not succesful.
+    """
+
     if not check_roles(["admin"]):
         return "User does not have permission to use this tool"
     
