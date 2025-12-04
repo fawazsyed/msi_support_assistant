@@ -1,5 +1,15 @@
+"""
+Support agent orchestration
+
+Run (from project root):
+uv run src/main.py
+"""
+
+
 import asyncio
 from pathlib import Path
+
+from fastmcp.client.auth import OAuth
 from langchain_openai import OpenAIEmbeddings
 # from langchain_google_vertexai import VertexAIEmbeddings
 from langchain_chroma import Chroma
@@ -113,15 +123,10 @@ async def main():
     try:
         client = MultiServerMCPClient(
             {
-                "math": {
-                    "command": "python",
-                    "args": [str(PROJECT_ROOT / "src" / "mcp_server.py")],
-                    "transport": "stdio",  # Local subprocess communication
-                },
-                "weather": {
-                    "url": "http://localhost:8000/mcp",
-                    "transport": "streamable_http",  # HTTP-based remote server
-                    # Note: Weather server must be running separately on port 8000
+                "ticketing": {
+                    "url": "http://127.0.0.1:8000/mcp",
+                    "transport": "streamable_http",
+                    "auth": OAuth(mcp_url = "http://127.0.0.1:8000/mcp")
                 }
             }
         )
@@ -145,9 +150,7 @@ async def main():
     # Test queries: mix of RAG, math tools, and weather tools
     test_queries = [
         "How do I add a new user?",  # RAG query - uses vector store
-        "What is 5 + 3?",  # MCP math tool - uses add()
-        "What's the magic number times 10?",  # MCP math tools - uses magic_number() and multiply()
-        "What is the weather in NYC?",  # MCP weather tool - uses get_weather()
+        "What is the most common ticket subject?" # MCP query - ticketing_mcp
     ]
     
     for query in test_queries:
