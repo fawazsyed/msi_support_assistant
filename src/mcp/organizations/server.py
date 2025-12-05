@@ -2,7 +2,7 @@
 MCP server for managing organizations
 
 Run (from project root):
-uv run fastmcp run src/mcp/organizations/server.py --port 9001
+uv run python -m src.mcp.organizations.server
 """
 
 import pathlib
