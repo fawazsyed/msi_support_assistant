@@ -13,7 +13,6 @@ from fastmcp import FastMCP
 from fastmcp.server.auth import RemoteAuthProvider
 from fastmcp.server.auth.providers.jwt import JWTVerifier
 from fastmcp.server.dependencies import get_access_token, AccessToken
-from mcp.server.fastmcp import FastMCP
 from pydantic import AnyHttpUrl
 
 SERVER_URL = "http://127.0.0.1:9000"
