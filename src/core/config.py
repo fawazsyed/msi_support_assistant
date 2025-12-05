@@ -72,3 +72,10 @@ MCP_ISSUER_URL = "http://127.0.0.1:9400"  # OAuth IDP for authentication
 # =============================================================================
 
 LOG_KEEP_RECENT = 10  # Keep last 10 log files
+
+# =============================================================================
+# Observability Configuration
+# =============================================================================
+
+ENABLE_RAGAS_COLLECTION = True  # Enable Ragas data collection
+RAGAS_DATA_DIR = "logs/ragas_data"  # Directory to save collected data for evaluation

@@ -31,6 +31,7 @@ from src.core.config import (
     VECTOR_STORE_COLLECTION_NAME,
     CHROMA_PERSIST_DIR
 )
+from src.observability.pii_scrubber import scrub_all_pii
 
 
 class BaseRAGAgent(ABC):
@@ -40,11 +41,31 @@ class BaseRAGAgent(ABC):
     Subclass this to create your own RAG agent with custom document sources.
     """
 
-    def __init__(self, project_root: Path, embeddings: OpenAIEmbeddings):
+    def __init__(
+        self,
+        project_root: Path,
+        embeddings: OpenAIEmbeddings,
+        scrub_pii: bool = True,
+        scrub_emails: bool = True,
+        scrub_phones: bool = True,
+        scrub_ssns: bool = True,
+        scrub_credit_cards: bool = True,
+        scrub_ips: bool = False,
+        scrub_urls: bool = False
+    ):
         self.project_root = project_root
         self.embeddings = embeddings
         self.vector_store: Optional[Chroma] = None
         self.logger = logging.getLogger(self.__class__.__name__)
+        
+        # PII scrubbing configuration
+        self.scrub_pii = scrub_pii
+        self.scrub_emails = scrub_emails
+        self.scrub_phones = scrub_phones
+        self.scrub_ssns = scrub_ssns
+        self.scrub_credit_cards = scrub_credit_cards
+        self.scrub_ips = scrub_ips
+        self.scrub_urls = scrub_urls
 
     @property
     @abstractmethod
@@ -138,6 +159,19 @@ class BaseRAGAgent(ABC):
             f"Document excerpt {i+1}:\n{doc.page_content}"
             for i, doc in enumerate(retrieved_docs)
         )
+
+        # Scrub PII from retrieved documents if enabled
+        if self.scrub_pii:
+            self.logger.debug(f"Scrubbing PII from {len(retrieved_docs)} retrieved documents")
+            docs_content = scrub_all_pii(
+                docs_content,
+                scrub_emails=self.scrub_emails,
+                scrub_phones=self.scrub_phones,
+                scrub_ssns=self.scrub_ssns,
+                scrub_credit_cards=self.scrub_credit_cards,
+                scrub_ips=self.scrub_ips,
+                scrub_urls=self.scrub_urls
+            )
 
         return docs_content
 

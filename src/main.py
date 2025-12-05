@@ -13,7 +13,8 @@ from dotenv import load_dotenv
 # Local imports
 from src.core.utils import setup_logging
 from src.core.agent import initialize_agent_components
-from src.core.config import LOG_KEEP_RECENT
+from src.core.config import LOG_KEEP_RECENT, ENABLE_RAGAS_COLLECTION, RAGAS_DATA_DIR
+from src.observability import RagasDataCollector
 
 # Get project root (parent of src/)
 PROJECT_ROOT = Path(__file__).parent.parent
@@ -44,6 +45,20 @@ async def main() -> None:
         logger=logger
     )
 
+    # Initialize Ragas data collection if enabled
+    collector = None
+    if ENABLE_RAGAS_COLLECTION:
+        collector = RagasDataCollector()
+        logger.info(f"Collector created: {collector}")
+        
+        # Create data directory
+        data_dir = PROJECT_ROOT / RAGAS_DATA_DIR
+        data_dir.mkdir(parents=True, exist_ok=True)
+        
+        logger.info(f"Ragas data collection enabled. Data will be saved to {data_dir}")
+    
+    logger.info(f"Collector after init: {collector}")
+
     # Test queries: mix of RAG and MCP tools
     test_queries = [
         "How do I add a new user?",  # RAG query - uses vector store
@@ -57,16 +72,73 @@ async def main() -> None:
         logger.info(f"Processing query: {query}")
 
         try:
+            # Collect messages for this conversation
+            messages = []
+            retrieved_contexts = []
+            final_response = ""
+            
             async for step in agent.astream(
                 {"messages": [{"role": "user", "content": query}]},
-                stream_mode="values",
+                stream_mode="values"
             ):
+                # Display message
                 step["messages"][-1].pretty_print()
+                
+                # Collect all messages for multi-turn evaluation
+                messages = step["messages"]
+                
+                # Extract final response
+                last_msg = step["messages"][-1]
+                if hasattr(last_msg, "content"):
+                    final_response = last_msg.content
+                
+                # TODO: Extract retrieved contexts from RAG tool calls
+                # This requires inspecting ToolMessage content from search_msi_documentation
+                # For now, we'll add multi-turn samples with the full conversation
 
             logger.info("Query completed")
+            
+            # Collect data for evaluation if enabled
+            if collector is not None:
+                try:
+                    # Add as multi-turn sample (captures full agent behavior)
+                    if messages:
+                        collector.add_multi_turn(
+                            messages=messages,
+                            metadata={
+                                "query": query,
+                            }
+                        )
+                        logger.info(f"Added multi-turn sample with {len(messages)} messages")
+                    else:
+                        logger.warning("No messages collected for this query")
+                except Exception as e:
+                    logger.error(f"Failed to add sample to collector: {e}")
+                    logger.exception("Full traceback:")
+                
         except Exception:
             logger.exception("Query failed")
             raise
+    
+    # Save collected data after all queries complete
+    logger.info("All queries completed, saving data...")
+    if collector is not None:
+        try:
+            from datetime import datetime
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            data_file = PROJECT_ROOT / RAGAS_DATA_DIR / f"agent_data_{timestamp}.json"
+            
+            logger.info(f"Saving {len(collector)} samples to {data_file}")
+            collector.save(data_file)
+            
+            logger.info(f"Collected {len(collector)} samples")
+            logger.info(f"Data saved to {data_file}")
+            logger.info(f"\nTo evaluate performance, run:")
+            logger.info(f"  uv run python -m src.observability.evaluator {data_file} --type multi_turn")
+        except Exception:
+            logger.exception("Failed to save collected data")
+    else:
+        logger.warning("Collector was None, no data to save")
 
 
 if __name__ == "__main__":
