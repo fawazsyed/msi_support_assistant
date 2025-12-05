@@ -40,7 +40,7 @@ from src.core.config import (
     MCP_ORGANIZATIONS_URL,
     MCP_ISSUER_URL,
 )
-from src.rag.base import create_default_rag_tools
+from src.rag.registry import create_default_rag_tools
 
 
 def create_rate_limiter() -> InMemoryRateLimiter:
