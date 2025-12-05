@@ -1,4 +1,4 @@
-import { Component, output, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, output, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 /**
@@ -14,7 +14,8 @@ import { FormsModule } from '@angular/forms';
       <div class="input-wrapper">
         <textarea
           class="message-input"
-          [(ngModel)]="inputValue"
+          [(ngModel)]="inputValueState"
+          (ngModelChange)="updateInputValue($event)"
           (keydown)="onKeyDown($event)"
           placeholder="Ask about MSI products, use tools, or chat..."
           rows="1"
@@ -44,6 +45,7 @@ import { FormsModule } from '@angular/forms';
       background-color: white;
       border-top: 1px solid #e0e0e0;
       padding: 1rem 2rem;
+      flex-shrink: 0; /* Prevent input from shrinking */
     }
 
     .input-wrapper {
@@ -142,10 +144,24 @@ import { FormsModule } from '@angular/forms';
 export class MessageInputComponent {
   messageSent = output<string>();
 
-  inputValue = '';
+  inputValueSignal = signal('');
   isDisabled = signal(false);
 
-  canSend = signal(false);
+  // Computed signal - automatically updates when inputValueSignal changes
+  canSend = computed(() => this.inputValueSignal().trim().length > 0);
+
+  // Property for ngModel binding
+  get inputValueState(): string {
+    return this.inputValueSignal();
+  }
+
+  set inputValueState(value: string) {
+    this.inputValueSignal.set(value);
+  }
+
+  updateInputValue(value: string): void {
+    this.inputValueSignal.set(value);
+  }
 
   onKeyDown(event: KeyboardEvent): void {
     // Send on Enter, new line on Shift+Enter
@@ -153,19 +169,13 @@ export class MessageInputComponent {
       event.preventDefault();
       this.sendMessage();
     }
-
-    // Update canSend state
-    setTimeout(() => {
-      this.canSend.set(this.inputValue.trim().length > 0);
-    }, 0);
   }
 
   sendMessage(): void {
-    const message = this.inputValue.trim();
+    const message = this.inputValueSignal().trim();
     if (message) {
       this.messageSent.emit(message);
-      this.inputValue = '';
-      this.canSend.set(false);
+      this.inputValueSignal.set('');
     }
   }
 

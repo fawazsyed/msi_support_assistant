@@ -7,13 +7,14 @@ uv run fastmcp run src/ticketing_mcp.py --port 9000
 
 import pathlib
 import sqlite3
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 from fastmcp import FastMCP
 from fastmcp.server.auth import RemoteAuthProvider
 from fastmcp.server.auth.providers.jwt import JWTVerifier
-from fastmcp.server.dependencies import get_access_token, AccessToken
 from pydantic import AnyHttpUrl
+
+from auth_utils import check_roles, get_username, get_user_roles, get_user_organizations
 
 SERVER_URL = "http://127.0.0.1:9000"
 ISSUER_URL = "http://127.0.0.1:9400"
@@ -36,62 +37,45 @@ AUTH = RemoteAuthProvider(
 
 # Create FastMCP server instance
 mcp = FastMCP(
-    name = "MCP Server", 
-    auth = {
-        "provider": AUTH,
-        "issuer_url": ISSUER_URL,
-        "resource_server_url": SERVER_URL
-    },
-    token_verifier = VERIFIER
+    name = "MCP Server",
+    auth = AUTH  # RemoteAuthProvider already contains the token verifier
 )
-
-def check_roles(allowed_roles: List[str]):
-    token: AccessToken | None = get_access_token()
-    roles = token.claims.get("roles") if token else None
-
-    return any(role in roles for role in allowed_roles)
-
-def get_username():
-    token: AccessToken | None = get_access_token()
-    return token.claims.get("sub") if token else None
-
 
 
 @mcp.tool()
-async def get_username():
+async def get_username_tool():
     """
     Description: Retrieves the active user's username.
-    Use case: Use this tool to retrieve the active user's username as needed. 
+    Use case: Use this tool to retrieve the active user's username as needed.
     Permissable roles: Any roles.
     Arguments: None.
     Returns: The username as a string.
     """
-    token: AccessToken | None = get_access_token()
-    return token.claims.get("sub") if token else None
+    return get_username()
+
 
 @mcp.tool()
-async def get_user_roles():
+async def get_user_roles_tool():
     """
     Description: Retrieves the active user's roles.
-    Use case: Use this tool to retrieve the active user's roles as needed. 
+    Use case: Use this tool to retrieve the active user's roles as needed.
     Permissable roles: Any roles.
     Arguments: None.
     Returns: The roles as a list of strings.
     """
-    token: AccessToken | None = get_access_token()
-    return token.claims.get("roles") if token else None
+    return get_user_roles()
+
 
 @mcp.tool()
 async def get_organizations():
     """
     Description: Retrieves the active user's organizations.
-    Use case: Use this tool to retrieve the active user's organizations as needed. 
+    Use case: Use this tool to retrieve the active user's organizations as needed.
     Permissable roles: Any roles.
     Arguments: None.
     Returns: The organizations as a list of strings.
     """
-    token: AccessToken | None = get_access_token()
-    return token.claims.get("organizations") if token else None
+    return get_user_organizations()
 
 @mcp.tool()
 async def create_ticket(
@@ -126,8 +110,8 @@ async def create_ticket(
         connection.close()
 
         return f"Ticket successfully created with id: {id}"
-    except:
-        return "Error with request"
+    except Exception as e:
+        return f"Error with request: {str(e)}"
 
 @mcp.tool()
 async def resolve_ticket(
@@ -182,8 +166,8 @@ async def resolve_ticket(
         connection.close()
 
         return f"Ticket {id} resolved"
-    except:
-        return "Error with request"
+    except Exception as e:
+        return f"Error with request: {str(e)}"
 
 @mcp.tool()
 async def get_tickets_by_user(
@@ -234,9 +218,9 @@ async def get_tickets_by_user(
                 "resolved_by": ticket['response_user']
             }
 
-    except:
-        return {"error": "Error with request"}
-    
+    except Exception as e:
+        return {"error": f"Error with request: {str(e)}"}
+
     return tickets_json
 
 @mcp.tool()
@@ -263,11 +247,11 @@ async def get_tickets_by_status(
         cursor = connection.cursor()
 
         query = """
-            SELECT id, title, description, status, response, response_user 
+            SELECT id, title, description, status, response, response_user
             FROM tickets
         """
         if status:
-            query += "where status = ?"
+            query += " where status = ?"
             cursor.execute(query, (status,))
         else:
             cursor.execute(query)
@@ -285,7 +269,10 @@ async def get_tickets_by_status(
                 "resolved_by": ticket['response_user']
             }
 
-    except:
-        return {"error": "Error with request"}
-    
+    except Exception as e:
+        return {"error": f"Error with request: {str(e)}"}
+
     return tickets_json
+
+if __name__ == "__main__":
+    mcp.run(transport="http", host="127.0.0.1", port=9000)

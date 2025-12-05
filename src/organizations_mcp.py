@@ -12,9 +12,9 @@ from typing import Any, Dict, List
 from fastmcp import FastMCP
 from fastmcp.server.auth import RemoteAuthProvider
 from fastmcp.server.auth.providers.jwt import JWTVerifier
-from fastmcp.server.dependencies import get_access_token, AccessToken
-from mcp.server.fastmcp import FastMCP
 from pydantic import AnyHttpUrl
+
+from auth_utils import check_roles, get_username
 
 SERVER_URL = "http://127.0.0.1:9001"
 ISSUER_URL = "http://127.0.0.1:9400"
@@ -38,24 +38,10 @@ AUTH = RemoteAuthProvider(
 
 # Create FastMCP server instance
 mcp = FastMCP(
-    name = "MCP Server", 
-    auth = {
-        "provider": AUTH,
-        "issuer_url": ISSUER_URL,
-        "resource_server_url": SERVER_URL
-    },
-    token_verifier = VERIFIER
+    name = "MCP Server",
+    auth = AUTH  # RemoteAuthProvider already contains the token verifier
 )
 
-# Helper functions
-def check_roles(allowed_roles: List[str]):
-    token: AccessToken | None = get_access_token()
-    roles = token.claims.get("roles") if token else None
-    return any(role in roles for role in allowed_roles)
-
-def get_username():
-    token: AccessToken | None = get_access_token()
-    return token.claims.get("sub") if token else None
 
 @mcp.tool()
 async def get_organization_users(
@@ -81,12 +67,9 @@ async def get_organization_users(
         # Check permission to use tool
         if not check_roles(["admin"]):
             username = get_username()
-            print(username)
-            print(organization)
             query = "SELECT organization_permissions FROM users WHERE username = ? AND organization = ?"
             cursor.execute(query, (username, organization,))
             permissions_str = cursor.fetchone()
-            print(permissions_str)
             if permissions_str:
                 permissions = set(permissions_str[0].split(','))
                 if "view_agency_users" not in permissions:
@@ -102,10 +85,10 @@ async def get_organization_users(
         connection.close()
 
         return {"users": [user[0] for user in users]}
-            
-    except:
-        return {"error": "Error with request"}
-            
+
+    except Exception as e:
+        return {"error": f"Error with request: {str(e)}"}
+
 @mcp.tool()
 async def compare_user_permissions(
     organization: str,
@@ -146,7 +129,6 @@ async def compare_user_permissions(
                 connection.close()
                 return {"error": "User does not have permission to use this tool for the given organization"}
 
-        print("here")
         # Retrieve user permissions
         user_permissions_map = {}
         all_permissions = []
@@ -155,7 +137,6 @@ async def compare_user_permissions(
             query = "SELECT organization_permissions FROM users WHERE username = ?"
             cursor.execute(query, (user,))
             permissions_str = cursor.fetchone()
-            print("here")
             if permissions_str:
                 permissions = set(permissions_str[0].split(','))
                 user_permissions_map[user] = permissions
@@ -183,10 +164,11 @@ async def compare_user_permissions(
             unshared_permissions = permissions - shared_permissions
             permissions_comparison["unique_to_" + str(user)] = list(unshared_permissions)
 
-    except:
-        return {"error": "Error with request"}
+    except Exception as e:
+        return {"error": f"Error with request: {str(e)}"}
 
     return permissions_comparison
+
 
 @mcp.tool()
 async def get_organizations() -> Dict[str, Any]:
@@ -197,10 +179,10 @@ async def get_organizations() -> Dict[str, Any]:
     Arguments: None.
     Returns: Dict[str, Any] containing users or an error message.
     """
-    
+
     if not check_roles(["admin"]):
         return {"error": "User does not have permission to use this tool"}
-    
+
     response_json = {}
     try:
         connection = sqlite3.connect(DB_ORGANIZATIONS)
@@ -211,9 +193,9 @@ async def get_organizations() -> Dict[str, Any]:
 
         organizations = cursor.fetchall()
         connection.close()
-        
+
         for org in organizations:
-            key = org['name'] 
+            key = org['name']
             response_json[key] = {
                 "name": org['name'],
                 "aware_service": org['aware_service'],
@@ -221,7 +203,11 @@ async def get_organizations() -> Dict[str, Any]:
                 "region": org['region']
             }
 
-    except:
-        return {"error": "Error with request"}
-    
+    except Exception as e:
+        return {"error": f"Error with request: {str(e)}"}
+
     return response_json
+
+
+if __name__ == "__main__":
+    mcp.run(transport="http", host="127.0.0.1", port=9001)

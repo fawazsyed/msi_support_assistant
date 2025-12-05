@@ -1,4 +1,4 @@
-import { Component, input, computed, ChangeDetectionStrategy, SecurityContext, effect, signal } from '@angular/core';
+import { Component, input, ChangeDetectionStrategy, SecurityContext, effect, signal, inject } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 import { marked } from 'marked';
 import { markedHighlight } from 'marked-highlight';
@@ -117,10 +117,12 @@ import hljs from 'highlight.js';
   `]
 })
 export class MarkdownComponent {
+  private sanitizer = inject(DomSanitizer);
+
   content = input.required<string>();
   renderedContent = signal<string>('');
 
-  constructor(private sanitizer: DomSanitizer) {
+  constructor() {
     // Configure marked with syntax highlighting
     marked.use(
       markedHighlight({

@@ -51,8 +51,10 @@ import { MessageItemComponent } from '../message-item/message-item.component';
     .message-list {
       flex: 1;
       overflow-y: auto;
+      overflow-x: hidden;
       padding: 2rem;
       background-color: #ffffff;
+      min-height: 0; /* Critical for flexbox scrolling */
     }
 
     .empty-state {

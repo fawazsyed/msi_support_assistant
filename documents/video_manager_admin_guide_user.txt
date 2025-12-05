@@ -1,0 +1,948 @@
+VideoManager Admin Guide
+AdminCurrent page
+Admin
+Last updated:Nov 6, 2025268 minute readEnglish
+Body cameras
+In-car video systems
+VideoManager EX
+User Guide
+The Admin tab provides access to system administration functions.The tab is divided into panes, which are divided further into sections. You can find the relevant section by typing the name into the filter box at the top of the Admin tab.
+The panes are as follows:
+
+ Users
+For more information, see Users.
+
+Users
+In the  Users pane, you can edit aspects of VideoManager related to users and roles.
+From the  Users pane, you can access the following sections:
+
+In the  Users section, you can perform the following actions:
+Create, edit, and delete users.
+For more information, see Creating, Editing, and Deleting Users.
+
+Reassign users. This action transfers all media files and incidents from one user to another.
+For more information, see Reassigning Users.
+
+Unlock users. If users cannot access VideoManager because they have entered their password incorrectly too many times, you can manually grant them access again.
+For more information, see Unlocking Users.
+
+Export and import users and groups. You can download your entire database of users and groups to a CSV file, edit it, then reupload it, which makes it easy to bulk edit users and groups.
+For more information, see Exporting and Importing Users and Groups.
+
+View a user's device affinities. If configured, this action shows a list of devices that have been assigned to the user with single issue, undocked, and then redocked mid-shift.
+For more information, see Viewing and Clearing Device Affinities for Users.
+
+In the  Groups section, you can perform the following actions:
+Create, edit, and delete groups.
+For more information, see Creating, Editing, and Deleting Groups.
+
+Create a group for use with the M500/M500E.
+For more information, see Creating a Group for Use with the M500/M500E.
+
+View the effective permissions for a user or group. This action details the aspects of VideoManager to which a user or group has access, and how they got their per-missions (for example, from a role, or because they belong to a group).
+For more information, see Viewing Effective Permissions for Users or Groups.
+
+In the  Roles section, you can perform the following actions:
+Create, edit, copy, import, export, and delete roles.
+For more information, see Performing Roles Actions.
+
+In the  Authentication Methods section, you can perform the following actions:
+Configure how users log on to VideoManager.
+For more information, see Authentication Realms Configuration.
+
+In the  Password Complexity section, you can configure password complexity rules, to which all users on VideoManager must adhere.
+For more information, see Configuring Password Complexity.
+
+In the  Two Factor Authentication section, you can perform the following actions:
+Enable and configure two factor authentication on VideoManager. This action prompts specific users to enter a code provided by their phone before they can log on to VideoManager, in addition to entering their password as normal.
+For more information, see Enabling Two Factor Authentication.
+
+Enable and configure email login on VideoManager. This action prompts specific users to click a link sent to their email before they can log on to VideoManager, in addition to entering their password as normal.
+For more information, see Enabling and Configuring Login by Email.
+
+In the  User Self Service section, you can perform the following actions:
+Configure user self-service. This action dictates whether users can reset their own passwords, and whether workers can create their own users on VideoManager.
+For more information, see Configuring User Self Service.
+
+In the  User Import Settings section, you can configure the built-in user import tool. This action enables you to import multiple users or groups simultaneously from a CSV or XLS/XLSX file.
+For more information, see Built-In User Import Tool Configuration.
+
+In the  Login Settings section, you can create, edit, and delete login warnings, and configure user agreements.
+For more information, see Configuring Login Settings.
+
+Creating, Editing, and Deleting Users
+A user is assigned to every person using VideoManager. Different users have varying levels of control over the system, depending on how they have been configured.
+
+As well as creating users manually, it is also possible to configure VideoManager so that workers can create their own users. For more information, see Configuring User Self Service.
+
+Creating Users
+Procedure:
+Navigate to the Admin tab.
+Select the  Users pane.
+Click the  Users section.
+In the top right-hand corner, click  Create user.
+In the User name field, enter a name for the user.
+Note:
+Each user must have a unique username. The username can be changed later but it cannot be changed to another user's username.
+
+If the user is assigned to a device that is still in the field, the device becomes associated with the "deleted" user, which is the old username, as well as any media that is still on the device.
+
+In the Password field, enter a password for the user.
+Note: After you enter the password, the User must change password toggle is automatically set to On and the user is prompted to set their own password the first time they log on.
+You should configure when the password should expire from the Password Complexity section. For more information, see Configuring Password Complexity.
+
+To confirm the password, in the Confirm password field, enter the same password.
+In the Display name field, enter a display name for the user.
+The display name can be changed later.
+Optional: In the Email notifications field, enter an email address for the user.
+Users can receive notifications via email when specific actions are performed on VideoManager. The exact actions that prompt a notification are determined by the user's roles.
+
+Users can reset their own password, if the feature has been configured from the User Self Service section.
+
+Users may need to click a link sent to their email before they can log on to VideoManager, if the feature has been configured from the Two Factor Authentication section. Users without email addresses in this field will not be able to log on.
+
+In the Touch assign ID field, enter the touch assign ID to identify a user's RFID card with a device.
+This field is only relevant if the user is assigned a device with RFID. For more information, see Devices Assignment and Media Recording.
+If you want to find the RFID value of a card, you must touch the relevant card to the RFID reader and click  in the Touch assign ID field. This action shows a list of failed touch assign scans. The most recent entry is for that failed scan, which you can copy and paste into the Touch assign ID field.
+
+Note: If a user should be associated with multiple RFID cards (for example, if they have a door card and a warrant card), you can repeat the procedure for as many cards as necessary, but you must separate the touch assign IDs with a comma in the Touch assign ID field (for example, <543642,873924>).
+If you want to enable the user to log on to VideoManager, set Enabled to On. Otherwise, set the toggle to Off.
+In the  Roles pane, select the roles that the user should inhabit.
+This action determines which aspects of VideoManager the user can see and interact with.
+The user's roles can be changed later. For more information, see Performing Roles Actions.
+
+In the  Group memberships pane, select the groups to which the user should belong, enter the name of a previously created group, and click .
+The groups can be changed later. For more information, see Creating, Editing, and Deleting Groups.
+In the  Sharing pane, select the sharing options required for the user.
+The options are as follows:
+Auto share with – Any users or groups entered here have access to all media files, incidents, and exports created by the new user.
+Note: Users cannot see who their media files are auto-shared with, or if they are auto-shared at all.
+For new media, create shares for – Any users or groups entered here are automatically entered into the Shared: field of new media files recorded by the new user.
+This option is useful if certain users or groups should have access to media files recorded by the new user, but should not have access to all of their exports or incidents, which Auto share with would grant.
+
+For new incidents, create shares for – Any users or groups entered here are automatically entered into the Shared: field of new incidents created by the new user.
+This option is useful if certain users or groups should have access to incidents created by the new user, but should not have access to all of their exports or media files, which Auto share with would grant.
+
+Supervisor of – Any users or groups entered here are supervised by the new user, which means that the user can view their media files, incidents, and exports from the Supervised Media, Supervised Incidents, and Supervised Exports panes.
+To add the user or group, click .
+If required, from the  WiFi networks pane, add user-specific WiFi networks by clicking  Add network.
+These networks only appear on the user's account, and are not viewable by other users on the system. For more information, see Creating User-Specific WiFi Networks.
+Click Create user.
+Editing Users
+It can be necessary to edit a user if their password should be changed, or if they should be assigned to different roles.
+Procedure:
+Navigate to the Admin tab.
+Select the  Users pane.
+Click the  Users section.
+Locate the user to be edited by filtering users in one of the following ways:
+In the Name field, enter the user's username or display name.
+In the Authentication ID field, enter the user's authentication ID.
+In the In group field, enter the group name of the user's group.
+If you enter a group name in the In group field, you have the option to change if Only immediate members is set to On or not. If set to On, only users that are assigned directly to the specified group are returned, as opposed to if user A is assigned indirectly to group B because A belongs to group C, which is assigned to group B.
+
+In the Email field, enter the user's email.
+In the User UUID field, enter the user's UUID which is a unique, non-sequential ID for a user.
+Note: You need correct permissions to either view or search by this field. For more information, see User Permissions.
+From the Role drop-down list, select the user's relevant role.
+You can click  to reset the filter.
+
+Click Find.
+Next to the user to be edited, click  Go to user.
+Make the necessary changes and click Save user.
+Deleting Users
+If a worker leaves an organisation, it can be necessary to delete their user from VideoManager. Deleting a user does not delete any of their media files or incidents.
+Optionally, you can reassign the relevant user to another user on VideoManager. This action transfers all of their incidents, exports, and media files to the other user. For more information, see Reassigning Users. If the user is not reassigned, the Operator field for their media files reads as <deleted user's name> (DELETED). If a user is later recreated with the same username, all of the media files, exports, and incidents associated with that username are automatically associated with that user.
+
+Procedure:
+Navigate to the Admin tab.
+Select the  Users pane.
+Click the  Users section.
+Locate the user to be deleted by filtering users in one of the following ways:
+In the Name field, enter the user's username or display name.
+In the Authentication ID field, enter the user's authentication ID.
+In the In group field, enter the group name of the user's group.
+If you enter a group name in the In group field, you have the option to change if Only immediate members is set to On or not. If set to On, only users that are assigned directly to the specified group are returned, as opposed to if user A is assigned indirectly to group B because A belongs to group C, which is assigned to group B.
+
+In the Email field, enter the user's email.
+In the User UUID field, enter the user's UUID which is a unique, non-sequential ID for a user.
+Note: You need correct permissions to either view or search by this field. For more information, see User Permissions.
+From the Role drop-down list, select the user's relevant role.
+You can click  to reset the filter.
+Click Find.
+Next to the user to be deleted, click  Go to user.
+Click  Delete user.
+In the confirmation window, click Yes.
+Reassigning Users
+Reassigning a user transfers all of their media files and incidents to another user. This action is advised if a user has left an organisation and they should no longer have access to VideoManager, or if an organisation plans to reuse usernames on VideoManager. After a user is recreated with the same username as a previously deleted user, all media files and incidents associated with that username are reassigned to the user, even if it is not the same worker.
+
+Reassignment can be done before or after a user has been deleted from the system.
+
+Procedure:
+Navigate to the Admin tab.
+Select the  Users pane.
+Click the  Users section.
+In the top right-hand corner, click  Reassign user.
+In the Current owner field, enter the name of the user whose media files and incidents will be transferred.
+If the user still exists on VideoManager, their name pops up when typed in. If the user has been deleted, their name does not pop up when typed in, but is available for reassignment.
+In the New owner field, enter the name of the user who should receive the media files and incidents.
+Click Reassign.
+Unlocking Users
+You can configure how many login attempts a user can make before their account is locked, and for how long their account is subsequently locked, from the  Password Complexity section of the  Users pane in the Admin tab. If a user's account is locked, they cannot log on to VideoManager until their account is either unlocked by VideoManager automatically, or by an administrator manually.
+Procedure:
+Navigate to the Admin tab.
+Select the  Users pane.
+Click the  Users section.
+Next to the user to be unlocked, click  Go to user.
+The Status of a locked user reads as Locked and it has an  icon next to its username.
+Set Unlock now to Yes.
+Tip: If the user made too many incorrect login attempts because they forgot their password, you can also reset their password from this pane by entering the new password in the Password and Confirm password fields.
+Click Save user.
+Exporting and Importing Users and Groups
+You can download the database of users and groups to a CSV file, which enables you to edit the database in Excel, then reupload the same CSV file to VideoManager.
+
+Exporting the Database from VideoManager
+Procedure:
+Navigate to the Admin tab.
+Select the  Users pane.
+Click the  Users section.
+Click  Export users and groups.
+The CSV file is downloaded to your PC containing information about the users and groups. The file includes the users' roles and relationships, such as which users belong to which groups. You can edit the file in Excel.
+Importing the Database into VideoManager
+After editing the file, you can import the database back into VideoManager.
+Procedure:
+Navigate to the Admin tab.
+Select the  Users pane.
+Click the  Users section.
+Click  Import users and groups.
+Click Choose file and select the previously exported CSV file.
+VideoManager automatically performs a "dry run", allowing you to preview the changes before they come into effect. The following fields display:
+Users and groups added: lists the number of users and groups which are in the CSV file but not on VideoManager.
+Users and groups updated: lists the number of users and groups whose data in the CSV file does not match the data on VideoManager.
+Users and groups removed: lists the number of users and groups which are on VideoManager but not in the CSV file.
+Click Import.
+The following changes take place:
+All users and groups which are in the CSV file but not on VideoManager are added.
+All users and groups whose data in the CSV file does not match the data on VideoManager are updated.
+All users and groups which are on VideoManager but not in the CSV file are deleted.
+Postrequisites:
+You can import the CSV file into a new instance of VideoManager. This action copies the database at the time of export, and may be useful if you do not want to configure the built-in user import tool. To do so, follow the same procedure for importing users and groups but ensure that the roles on the new instance of VideoManager match the roles in the CSV file. If the roles in the CSV file do not match the role names on the new instance of VideoManager, the import job fails.
+
+To import a role:
+
+Navigate to the Admin tab.
+Select the  Users pane.
+Click the  Roles section.
+Click  Export role.
+On the new instance of VideoManager, navigate to the same place, and click  Import role.
+Viewing and Clearing Device Affinities for Users
+If Enable shift-long field trips has been set to On from the Devices section, all users who have been assigned a device with single issue (either with RFID or through VideoManager) have an affinity with their device. This means that if they dock their device in the middle of their shift, VideoManager makes a note of the connection and allows them to undock the same device later in the shift. You can view these affinities from the Edit user pane.
+Procedure:
+Navigate to the Admin tab.
+Select the  Users pane.
+Click the  Users section.
+Next to the relevant user, click  Go to user.
+Click  View device affinity.
+The Device Affinity window opens.
+The window shows all devices that have been associated with the user via single issue (either with RFID or through VideoManager), undocked, and then redocked again.
+
+The window can be empty for one of the following reasons:
+
+The device has not been docked yet.
+The affinity is not created until the device is docked within the user's shift for the first time
+
+The device was assigned to the user with permanent issue which does not create an affinity between the user and the device, because the same device is always associated with the user.
+When the device was redocked, it charged fully.
+When the device was redocked, it was manually unassigned by an administrator.
+The shift has elapsed as determined from the Devices section of the Devices pane, in the Admin tab.
+To clear the affinity, click  Clear.
+If the user docks the device during their shift, the device returns to the pool and must obey the configured battery requirements before it can be used. The user must either swipe their RFID card again, or have another device assigned to them on VideoManager, before they can record more media during their shift.
+For more information, see Configuring Device Settings.
+
+To return to the Edit user pane, click Close.
+Creating, Editing, and Deleting Groups
+You can create groups to associate certain users with each other. This action can be necessary if an organisation wants to share certain media files or incidents with lots of users at once, or if certain users should supervise other users. Groups can be members of groups themselves.
+Creating Groups
+Procedure:
+Navigate to the Admin tab.
+Select the  Users pane.
+Click the  Groups section.
+Click  Create group.
+In the Group name field, enter a name for the group.
+This field cannot be edited later.
+In the Display name field, enter a display name for the group.
+Note: A group cannot have the same name as an existing user or group on the system. However, a group and user can have the same display name.
+In the  Roles pane, enable the pre-existing roles that should apply to all users in this group.
+This action does not add all users that inhabit the role to the group.
+In the  Group memberships pane, enter the names of the groups to which this group should belong, and to add the user or group, click .
+You can also add individual users to groups from the user's page. For more information, see Creating, Editing, and Deleting Users.
+In the  Sharing pane, configure any of the following fields.
+The options are as follows:
+Option	Description
+Auto share with	Any users or groups entered here have access to all media files, incidents, and exports created by the group.
+Note: Users in a group cannot see who their media files are auto-shared with, or if they are auto-shared at all.
+If group A auto shares with a user, then every user in group A shares their incidents with that user.
+
+If group A auto shares with group B, then every user in group A auto shares their incidents with every user in group B.
+
+For new media, create shares for	Any users or groups entered here are automatically entered into the Shared: field of new media files recorded or imported by the users within this group.
+This option is useful if certain users or groups should have access to media files recorded or imported by the users in this group, but should not have access to all of their exports or incidents, which Auto share with would grant.
+
+For new incidents, create shares for	Any users or groups entered here are automatically entered into the Shared: field of new incidents created by the users in this group.
+This option is useful if certain users or groups should have access to incidents created by the users in this group, but should not have access to all of their exports or media files, which Auto share with would grant.
+
+Supervisor of	This option determines which users and groups are supervised by this group.
+If group A supervises a user, then every user in group A supervises that user.
+
+If group A supervises group B, then every user in group A supervises every user in group B.
+
+Note: The supervision applies to incidents, exports, and devices.
+To add the group, click .
+Optional: In the  WiFi networks pane, create user-specific WiFi networks that should only be available to all users in the group.
+This action can be necessary if all users in a group will be live streaming media with their devices, over a specific hotspot.
+Click Create group.
+After a group has been created, other users and groups can be added to it. For more information, see Creating, Editing, and Deleting Users.
+Editing Groups
+Procedure:
+Navigate to the Admin tab.
+Select the  Users pane.
+Click the  Groups section.
+Locate the group to be edited by filtering groups in one of the following ways:
+In the Name field, enter the group's username or display name.
+In the In group field, enter the group name.
+If you enter a group name in the In group field, you have the option to change if Only immediate members is set to On or not. If set to On, only groups that are assigned directly to the specified group are returned, as opposed to if group A is assigned indirectly to group B because A belongs to group C, which is assigned to group B.
+
+From the Role drop-down list, select the group's relevant role.
+You can click  to reset the filter.
+Click Find.
+Next to the group to be edited, click  Go to group.
+Make the necessary changes and click Save group.
+Deleting Groups
+If a group becomes redundant, it can be deleted. Deleting a group does not delete any of the users within it. Instead, it immediately affects what those users can see on VideoManager, and to which media files/exports/incidents they have access.
+Procedure:
+Navigate to the Admin tab.
+Select the  Users pane.
+Click the  Groups section.
+Locate the group to be edited by filtering groups in one of the following ways:
+In the Name field, enter the group's username or display name.
+In the In group field, enter the group name.
+If you enter a group name in the In group field, you have the option to change if Only immediate members is set to On or not. If set to On, only groups that are assigned directly to the specified group are returned, as opposed to if group A is assigned indirectly to group B because A belongs to group C, which is assigned to group B.
+
+From the Role drop-down list, select the group's relevant role.
+You can click  to reset the filter.
+Click Find.
+Next to the group to be deleted, click  Go to group.
+Click  Delete group.
+In the confirmation window, click Yes.
+If users belong to the deleted group, their permissions and abilities are altered immediately, depending on how the group was configured. This could mean that the users no longer inhabit certain roles, or no longer have access to other users' media files/exports/incidents.
+Creating a Group for Use with the M500/M500E
+Unlike body worn devices, where one user is assigned to one device, the M500/M500E should be assigned to a group of users. All users within this group will be then able to log on to using the control panel, and operate the M500/M500E in the ﬁeld. You must manually create this group on VideoManager.
+Procedure:
+Navigate to the Admin tab.
+Select the  Users pane.
+Click the  Groups section.
+In the top right-hand corner, click  Create group.
+Enter a name for the group.
+For example, M500 Users
+Optional: In the Display name field, enter a display name for the group.
+The display name can be changed later.
+In the right-hand  Roles pane, ensure that Vehicle Operator is set to On for the group.
+Click Create group.
+Add all of the users to be operating M500/M500Es to this group by performing the following actions:
+Navigate to the Admin tab.
+Select the  Users pane.
+Click the  Users section.
+Next to the relevant user, click  Go to user.
+In the  Group memberships section, enter the previously created group name and click .
+Click Save user.
+Viewing Effective Permissions for Users or Groups
+After a user or group has been created, their effective permissions can be viewed, which gives administrators insight into how the user or group's permissions and roles interact with each other.
+Procedure:
+Navigate to the Admin tab.
+Select the  Users pane.
+Click either the  Users or  Groups section.
+Next to the relevant user or group, click  Go to user or  Go to group.
+Click  View effective permissions.
+The following information is viewable:
+Name	Description
+ Assigned roles	
+For a user, this pane shows the roles they inhabit, and how they got those roles, that is whether the user itself has the role, or whether it belongs to a group that has the role.
+For a group, this pane shows the roles every user in the group inhabit, and how they got those roles, that is whether the group itself has the role, or whether it belongs to another group that has the role.
+ Assigned groups	For a user/group, this pane shows the groups they belong to, if any.
+ Assigned WiFi networks	For a user/group, this pane shows which user-specific WiFi networks they have been assigned, if any.
+If the user-specific WiFi networks are not included in the default network profile on VideoManager (because User-specific networks has been set to Off), a warning appears alerting the administrator to this fact.
+
+This is relevant because devices assigned via single issue (with RFID) and permanent allocation automatically use the default network profile. If user-specific WiFi networks are not enabled for the default network profile, these devices cannot use them to live stream media.
+
+ Device profiles	This pane shows the user/group's device profiles.
+The user/group could have these device profiles because:
+
+The user/group has a role with which the device profiles are associated.
+The user/group is assigned to a group that has the role with which the device profiles are associated.
+Note: Default device profiles are marked with . The default device profiles are automatically presented when the user is assigning a device.
+Permissions	For a user/group, this pane on the right-hand side shows their sum total of permissions.
+The user/group could have these permissions because:
+
+The user/group has a role, which contains the permissions.
+The user/group is assigned to a group that has the role, which contains the permissions.
+Users within this group have these permissions in addition to the permissions they would have from the roles they inhabit.
+
+To return to the  Users or  Groups section, click  Back.
+Performing Roles Actions
+A role is a collection of permissions within VideoManager, which can then be assigned to users. Roles determine what actions users can take on VideoManager, and what aspects of the UI they can see. Each user can have several roles assigned to them.
+
+VideoManager provides the following default roles:
+
+ System Administrator – Users assigned to this role can access all aspects of the VideoManager UI, such as deleting incidents, creating other users, and more.
+Device Operator – Users assigned to this role can record media files. They cannot perform any other actions on VideoManager, and cannot log on.
+System User – Users assigned to this role can view their own media files, and media files shared with them. They cannot operate devices, or access the Admin tab.
+System Supervisor – Users assigned to this role can view their own media files and those recorded by users they are supervising. They cannot operate devices, or access the Admin tab.
+System Manager – Users assigned to this role can view all media files on VideoManager, assign devices, and perform actions on incidents.
+Users may find it necessary to create their own roles, tailored to their workflow. Every default role except System Administrator can be edited manually.
+
+Creating Roles
+Procedure:
+Navigate to the Admin tab.
+Select the  Users pane.
+Click the  Roles section.
+Click  Create role.
+In the Name field, enter a name for the role.
+In the Description field, enter a description for the role.
+Optional: From the  Default device profiles drop-down list, select which previously created device profiles should apply to devices that have been assigned to users in this role.
+Devices assigned with RFID use this device profile automatically. If devices are assigned manually, users can override this device profile if they have the correct permissions.
+
+The administrator should choose a device profile for each device family. If they do not do so, the default device profile is used.
+
+If a user belongs to multiple roles, but all of the device profiles for roles are set to the system default except one, the one that is not the system default is used.
+
+If a user belongs to multiple roles, but some of the device profiles for roles are not set to the system default, the device profile that is highest in the device profile list, apart from the default profile, is used.
+
+Note: This list can be reordered from the Device Settings section of the Devices pane, in the Admin tab. From here, you can also change the system default device profile.
+Set additional options for the new role using any of the following toggles.
+If Add new users to this role? is set to On, any new users created on VideoManager from now on automatically inhabit this role.
+If Use alternate password complexity? is set to Yes, the users in this role must set a password which conforms to the alternate password rules, instead of the normal password rules.
+For more information, see Configuring Password Complexity.
+
+From the Role assignment tier drop-down list, select which tier this role should belong to.
+By default, roles belong to tier 1. Users can only add other users to roles that are in the same tier or lower as their own roles.
+
+For example, if user A's role is in tier 2, they can only add other users to roles which are also in tier 2, or lower. This means they cannot add other users, or themselves, to roles which are in tier 1.
+
+Note: Even users with the Assign higher privileges permission are not able to add other users to roles that are in a higher tier than their own role.
+Two factor authentication – If two factor authentication has already been configured, administrators can configure whether users in this role must scan a QR code with their phone before they can log on to VideoManager.
+For more information, see Enabling Two Factor Authentication.
+
+Requires privilege elevation? – Although some aspects of role elevation can be configured from this pane, it is a multi-step process.
+For more information, see Configuring Privilege Escalation.
+
+Configure permissions for the role.
+This action determines what actions users in this role can perform. For more information, see Enable and Disable Permissions.
+To save the role, click Create role.
+Copying Roles
+Copying a role duplicates the entire role except its name and is useful if you want to create many similar roles on your instance of VideoManager.
+Procedure:
+Navigate to the Admin tab.
+Select the  Users pane.
+Click the  Roles section.
+Next to the role to be copied, click  Copy role.
+The role is copied and opened for editing, with the Name field left blank.
+Note: It is not possible to create two roles with the same name.
+To save the changes, click Create role.
+Editing Roles
+It can be necessary to edit a role if the responsibilities of a user have changed.
+Procedure:
+Navigate to the Admin tab.
+Select the  Users pane.
+Click the  Roles section.
+Next to the role to be edited, click  Go to role.
+You can edit the properties, such as Name, Description, and Default device profiles, and permissions of a role.
+Click Save role.
+Deleting Roles
+It can be necessary to delete a role if it has become obsolete.
+Procedure:
+Navigate to the Admin tab.
+Select the  Users pane.
+Click the  Roles section.
+Next to the role to be deleted, click  Delete role.
+A confirmation window opens to alert if there are users associated with the role.
+Click Yes.
+Note: If users are associated with the role you want to delete, their ability to use VideoManager may be compromised once the role has been deleted. If the deleted role was the user's only role, they are unable to access VideoManager until they have been assigned a new role.
+Enable and Disable Permissions
+A permission is an individual rule, which determines the actions users can perform on VideoManager.
+
+For a comprehensive list of all permissions, see Permissions.
+
+A user's permissions are the union of their roles. This means that if a user belongs to two roles, one of which has the permission Log in to VideoManager application set to On and one that has it set to Off, that user will still be able to log on. There are no permissions that deny an action. Only the absence of permissions denies actions.
+
+The groups of permissions are as follows:
+
+System permissions control users' abilities to log on to VideoManager, as well as their audit and export abilities.
+Media file permissions control users' abilities regarding media files. The permissions are sorted by the following criteria:
+Owned – If enabled, users can perform actions on the media files recorded or imported by them.
+Shared – If enabled, users can perform actions on the media files that have been shared with them by other users on the system.
+Supervised – If enabled, users can perform actions on the media files that have been recorded or imported by other users on the system that they supervise.
+Any – If enabled, users can perform actions on any media files on the system, regardless of who recorded them.
+Incident permissions control users' abilities regarding incidents. The permissions are sorted by the following criteria:
+Owned – If enabled, users can perform actions on the incidents created by them.
+Shared – If enabled, users can perform actions on the incidents that have been shared with them by other users on the system.
+Supervised – If enabled, users can perform actions on the incidents that have been created by other users on the system that they supervise.
+Any – If enabled, users can perform actions on any incidents on the system, regardless of who created them.
+Device permissions control users' abilities regarding devices. The permissions are sorted by the following criteria:
+User – If enabled, users can perform actions on the devices assigned to them.
+Supervised If enabled, users can perform actions on the devices that are assigned to them or other users on the system that they supervise.
+Any – If enabled, users can perform actions on any device on the system.
+User permissions control users' abilities regarding other users. The permissions are sorted by the following criteria:
+Supervised – If enabled, users can perform actions on the users on the system that they supervise.
+Any – If enabled, users can perform actions on any user on the system.
+Notification permissions control how notifications work (if they have been licenced).
+Report permissions control users' abilities to create reports and view statistics.
+Field permissions dictate the access groups to which users belong, which affects which saved searches and incident fields they can see.
+Advanced permissions control users' abilities regarding advanced aspects of VideoManager. The permissions are sorted by the following criteria:
+View – If enabled, users can view advanced aspects of VideoManager.
+Edit – If enabled, users can edit advanced aspects of VideoManager.
+Authentication Realms Configuration
+By default, users log on to VideoManager with a username and password. However, administrators can also configure the system so that users can log on with their Windows credentials, other single sign-on credentials, or a certificate.
+Creating Windows Authentication Realm
+The following procedure describes how to configure Windows Authentication for an on-premises instance of VideoManager. If you want to conﬁgure Windows Authentication for a cloud instance of VideoManager, see VideoManager (Cloud) and Windows Active Directory Explained.
+If you are using an on-premises instance of VideoManager which has been installed within your domain, you can use local authentication, which means that any users within the domain can log on to VideoManager, regardless of the speciﬁc PC.
+
+Procedure:
+Navigate to the Admin tab.
+Select the  Users pane.
+Click the  Authentication Methods section.
+Click  New realm.
+From the Authentication type drop-down list, select Windows Authentication.
+From the Visibility type drop-down list, configure how users will access the login button for the realm:
+If you want the login realm to be displayed as a button on the login page, select Standard.
+If you want the button of the login realm to be visible on the login page only if the user clicks Show advanced login methods, select Advanced.
+If you want only users who have access to the realm’s unique URL to be able to log on with it, select Hidden.
+You can copy this URL once the realm has been created.
+
+In the Identifier field, enter a unique name for this realm.
+In the Label field, enter the text to be displayed on the button for this realm.
+For example, Click here.
+Ensure that Enabled is set to Yes.
+If set to No, users will not be able to log on with this realm.
+Set Use passthrough login matcher to Yes and fill in the required fields.
+The default value in the Passthrough login matcher ﬁeld prompts VideoManager to ignore the [domain]\ portion of Windows usernames and recognize only the user’s actual username.
+Users can only use their Windows credentials to log on to VideoManager if their usernames match across both systems. Enabling this setting means that you do not have to create users on VideoManager whose usernames all include [domain]\.
+
+If you want users to be automatically assigned to a group, set Auto set group membership to Yes.
+From the Authentication type drop-down list, select Windows Auth via local.
+Click Save.
+The server restarts.
+Creating Single Sign-On Authentication Realm
+Procedure:
+Navigate to the Admin tab.
+Select the  Users pane.
+Click the  Authentication Methods section.
+Click  New realm.
+From the Authentication type drop-down list, select Single Sign-On (OAuth2).
+From the Visibility type drop-down list, configure how users will access the login button for the realm:
+If you want the login realm to be displayed as a button on the login page, select Standard.
+If you want the button of the login realm to be visible on the login page only if the user clicks Show advanced login methods, select Advanced.
+If you want only users who have access to the realm’s unique URL to be able to log on with it, select Hidden.
+You can copy this URL once the realm has been created.
+
+In the Identifier field, enter a unique name for this realm.
+In the Label field, enter the text to be displayed on the button for this realm.
+For example, Click here or Log in with Okta.
+Ensure that Enabled is set to Yes.
+If set to No, users will not be able to log on with this realm.
+Optional: To map the ID in the client certificate to the VideoManager username, set Use passthrough login matcher to Yes and fill in the required fields.
+If set to No, VideoManager assumes that the full ID in the client certificate maps on to a username.
+In the Issuer URL, Client ID, and Client secret fields, enter the corresponding information for the realm.
+From the Response type drop-down list, select how the realm will authenticate against the OpenID provider.
+If you are unsure, select code.
+In the Login prompt field, determine how the OAuth2 provider will prompt users for authentication.
+This is determined on a per-provider basis. Common values include:
+Blank – The user will be prompted to authenticate, unless they are already logged on to the OAuth2 session.
+login – The user will always be prompted to authenticate, even if they are already logged on to the OAuth2 session.
+select_account – The authorization server will promt the user to select a user account. This allows a user who has multiple accounts on the authorization server to select one of the accounts that they may have current sessions for.
+none – The user will never be prompted to authenticate, even if they are not already logged on.
+If you want a user to be logged out of their OAuth2 session once they log out of VideoManager, set OAuth2 logout enabled to Yes.
+This applies if the user manually logs out of VideoManager, or if they are automatically logged out after a period of inactivity.
+Optional: To verify that URLs are working and the service is available, next to the Text configuration field, click Test
+The test cannot validate client credentials or claims.
+In the User Claim field, enter the claim which will map users from your OpenID database to the VideoManager user database.
+From the User claim mapping drop-down list, select which claim will map users from your VideoManageruser database to your external user database.
+The options are as follows:
+Username – Your VideoManager users will be mapped to your OpenID database via their usernames.
+Authentication ID – Your VideoManager users will be mapped to your OpenID database via their unique authentication ID.
+Selecting Authentication ID is convenient if you are migrating from one login system to another, for example from VideoManager usernames to OAuth2. This action ensures that you do not have to change the usernames, or create new users and migrate media. It also allows “dual running” for some period of time without disruption.
+
+If Auto Provisioning on Login is set to On, any correctly authenticated OAUTH2 user is automatically provisioned with a specified group along with those group permissions, even if they do not have an account in VideoManager. In order to use this feature, the response type needs to be set to code and the authentication provider needs to return the user's group claims as a list in the authentication token.
+The following options appear:
+In the Group claim field, enter the claim that will map groups from your OpenID database to the VideoManager group database.
+In the Groups field, enter the name of an existing group that the user will be automatically added to and click .
+If Legacy provisioning mode is set to On, the user is created automatically if they are an OAuth2 provider.
+Note: Do not enable this mode unless advised by the technical support.
+More options appear such as:
+Name claim field;
+ to add default roles;
+Group Mappings section that allows for creating group mappings.
+Click Save.
+The server restarts.
+Creating Client Certificate Authentication Realm
+Prerequisites:
+
+Create a user. For more information, see Creating, Editing, and Deleting Users.
+Configure VideoManager listen addresses. For more information, see Configuring Listen and Public Addresses of VideoManager.
+Note: The address that users use to access the login page must have the same hostname as the server address and must include https. You must ensure that the browser accepts the certificate and does not show any warnings.
+Procedure:
+Navigate to the Admin tab.
+Select the  Users pane.
+Click the  Authentication Methods section.
+Click  New realm.
+From the Authentication type drop-down list, select Client Certificate Authentication.
+From the Visibility type drop-down list, configure how users will access the login button for the realm:
+If you want the login realm to be displayed as a button on the login page, select Standard.
+If you want the button of the login realm to be visible on the login page only if the user clicks Show advanced login methods, select Advanced.
+If you do not want the login realm to be visible on the login page, select Hidden.
+In the Identifier field, enter a unique name for this realm.
+For example, cert-auth
+In the Label field, enter the text to be displayed on the button for this realm.
+For example, Click here.
+Ensure that Enabled is set to Yes.
+If set to No, users will not be able to log on with this realm.
+Optional: To map the ID in the client certificate to the VideoManager username, set Use passthrough login matcher to Yes and fill in the required fields.
+If set to No, VideoManager assumes that the full ID in the client certificate maps on to a username.
+To upload new certificate, in the Client Certificate Authentication section, click .
+Click Choose file.
+It is usually a .crt or .pem file.
+Select the certificate and click Open.
+Enter the password.
+Click OK.
+Optional: In the Error Message field, enter an error message to be displayed on the login screen when login is denied.
+For example, A login error occurred. If the problem persists, close the window and open it again.
+Click Save.
+The server restarts.
+Configuring Password Complexity
+You can customise the VideoManager password settings to meet existing security regulations, and make VideoManager more secure.
+
+The  Password Complexity section is divided into Primary and Alternate requirements. By default, all passwords must meet the primary requirements. However, if there is a need for administrative passwords to be more secure than user passwords, the alternate requirements can be set more stringently and any role can be set to require passwords to meet them instead.
+
+Procedure:
+Navigate to the Admin tab.
+Select the  Users pane.
+Click the  Password Complexity section.
+In the Minimum password length field, enter the minimum number of characters which users must meet.
+In the Minimum hours between password changes field, enter the minimum number of hours for which a user's password must exist, after which it can be changed by them.
+This action only affects a user's ability to change their own password from the Update password pane of their Account Profile tab. You can still update passwords from the  Users section, even if doing so violates the rule configured here.
+For more information, see Creating, Editing, and Deleting Users.
+
+Configure the password complexity by any of the following criteria:
+If Must contain lowercase is set to On, a password must have at least one lowercase letter.
+If Must contain uppercase is set to On, a password must have at least one uppercase letter.
+If Must contain number is set to On, a password must have at least one number.
+If Must contain symbol is set to On, a password must have at least one symbol.
+If Disallow username in password is set to On, a user cannot include their username in their password.
+If Disallow repeated characters is set to On, a password cannot have the same character multiple times in a row.
+You must set the maximum number of repeated characters allowed by VideoManager. For example, if the number is set to 1, then the password Bubble would be deemed inadmissible because it has two bs in a row.
+
+If Disallow password reuse is set to On, a password cannot match the user's previous passwords.
+You must enter the number of previous passwords, which the new password cannot match.
+
+If Require periodic password changes is set to On, you must enter the number of days after which passwords on VideoManager must be reset.
+If Prevent repeated login attempts is set to On, you must enter the number of times someone can try to log on to VideoManager unsuccessfully, after which their account will be locked. You must also enter the number of minutes for which the profile will be locked, before users can try to log on again.
+Suitably privileged users can unlock other users from the  Users section of the  Users pane, in the Admin tab. For more information, see Unlocking Users.
+
+If Temporary password expire is set to On, a temporary password given to a user if, for example, they forget their password, expires after a set number of hours. You must enter the number of hours for which the password is valid.
+If Alternate is set to On, the same password restrictions must be configured.
+Any roles that utilise the alternate password complexity must have Alternate set to Yes. For more information, see Performing Roles Actions.
+
+Click Save settings.
+If the password requirements for a role change, users must change their password upon next login so it meets the new requirements.
+Enabling Two Factor Authentication
+By default, users log on to VideoManager with their username and unique password. If an organisation needs an extra layer of security, two factor authentication can be enabled and configured, which prompts users to scan a QR code with their phones, and enter the corresponding code into VideoManager.
+
+Two factor authentication must be enabled on VideoManager before individual users can utilise it.
+
+Procedure:
+Navigate to the Admin tab.
+Select the  Users pane.
+Click the  Two Factor Authentication section.
+From the Authentication settings drop-down list, select how two factor authentication should behave on VideoManager.
+The options are as follows:
+Mandatory – Two factor authentication is mandatory for every user on this instance of VideoManager, regardless of whether it is disabled for individual roles or not.
+Per role – Two factor authentication is determined on a role-by-role basis.
+For more information, see Configuring Two Factor Authentication for Roles.
+
+Disabled – Two factor authentication is disabled for this entire instance of VideoManager.
+Click Save settings.
+Every user that is affected by the two factor authentication settings is prompted to associate their phone with VideoManager the next time they log on. For more information, see Setting Up Two Factor Authentication.
+Configuring Two Factor Authentication for Roles
+If two factor authentication has been set to Per role from the  Login Settings section, you must now manually enable two factor authentication for individual roles.
+
+Procedure:
+Navigate to the Admin tab.
+Select the  Users pane.
+Click the  Roles section.
+Next to the role to be edited, click  Go to role.
+From the TOTP two-factor authentication drop-down list, configure the two factor authentication settings that should affect all users in this role.
+The options are as follows:
+Mandatory – Two factor authentication is the only function that a user in this role can perform when they first log on, and every login after that requires a 6-digit code to be entered as provided to the user via an app.
+Optional – The user is not required to go through two factor authentication when initially logging on. However, they can enable it from their Account profile page once they are logged on to VideoManager.
+Disabled – Two factor authentication is not requested upon first login, and users cannot enable it from their Account profile page.
+Note: If a user inhabits two roles with contrasting two factor authentication rules, for example, one is set to Disabled and one is set to Mandatory, the user needs to utilise two factor authentication.
+Click Save role.
+Setting Up Two Factor Authentication
+After two factor authentication has been configured, all users affected by it must configure their phones so they work with VideoManager. Users must configure their phones if they belong to a role that has had TOTP two-factor authentication set to Mandatory, or if Authentication settings have been set to Mandatory for the entirety of VideoManager.
+Procedure:
+Download an authenticator app onto a phone.
+Motorola Solutions recommends Google Authenticator.
+Log on to VideoManager as normal.
+You are asked to set up two factor authentication.
+Click Set up.
+A QR code appears on the screen.
+Using the authenticator app, either scan the QR code or manually type in the key.
+The authenticator app provides a 6-digit code.
+In the field on VideoManager, enter the code provided by the authenticator app.
+Click Complete Set Up.
+From now on, whenever you log on, you are asked to provide another 6-digit code from the authenticator app on your phone. You do not need to re-scan a QR code.
+If you get a new phone, you must repeat the process of associating it with VideoManager. You can do it by navigating to the  Account profile tab and clicking Generate new authentication in the  Two Factor Authentication pane. You must scan the new QR code with the phone to be associated with VideoManager.
+
+Resetting a Two Factor Authentication Key
+If, for example, a user lost their phone and cannot use two factor authentication to log on to VideoManager, an administrator must reset their two factor authentication key for them.
+Procedure:
+Ensure that you are in a role where the Clear Two Factor Authentication permission has been set to On.
+For more information, see Enable and Disable Permissions.
+Navigate to the Admin tab.
+Select the  Users pane.
+Click the  Users section.
+Next to the relevant user, click  Go to user.
+Click  Clear Two Factor Authentication key.
+Click Save user.
+Next time the user logs on, they are prompted to scan a new QR code.
+Enabling and Configuring Login by Email
+By default, users log on to VideoManager with their unique username and password. If an organisation needs an extra layer of security, administrators can enable and configure email login. Users must still enter their password like normal, but they must also click a link sent to their email inbox. They will only have access to VideoManager after they have completed both of these actions.
+
+Email logins must be enabled on VideoManager before individual users can utilise their email to log on.
+
+Procedure:
+Ensure that email settings have been enabled and configured from the  Email Settings section of the  Connectivity pane, in the Admin tab.
+For more information, see Configuring Email Settings.
+Navigate to the Admin tab.
+Select the  Users pane.
+Click the  Two Factor Authentication section.
+From the Use email to login drop-down list, select which users should be affected by email login.
+The options are as follows:
+Mandatory – Login by email is mandatory for every user on this instance of VideoManager, regardless of whether it is disabled for individual roles or not.
+If this setting is selected, you must ensure that all users on VideoManager are associated with an email address, or they will be unable to log on.
+
+Per role – Login by email is determined on a role-by-role basis.
+If this setting is selected, you must enable email login for individual roles.
+
+Disabled – Login by email is disabled for this entire instance of VideoManager.
+In the Email subject template and Email content template fields, configure the format of the email that users will receive when they try to log on.
+Possible variables are as follows:
+<siteName> corresponds to Motorola Solutions VideoManager
+<siteUrl> is the name of VideoManager. For example, 194.168.76.230
+<siteHost> is the public address of VideoManager. For example, http://194.168.76.230:9080/
+<loginUrl> is the link which users must click to log on
+Note: If <loginUrl> is not included in the email, users will not be able to log on.
+<expirationTime> is the length of time that the link is valid for, as configured in the Verification expiry time field.
+In the Verification expiry time field, configure how long a login link is valid for.
+Click Save settings.
+Perform one of the following actions:
+If…	Then…
+If you have selected the Mandatory option from the drop-down list in 5,	go to 10.
+If you have selected the Per role option from the drop-down list in 5,	configure email login for individual roles by performing the following actions:
+Navigate to the Admin tab.
+Select the  Users pane.
+Click the  Roles section.
+Next to the role to be edited, click  Go to role.
+Set Send a link by email to complete login to Yes.
+Click Save role.
+Repeat for as many roles as necessary.
+Add an email address to a user's profile by performing the following actions:
+Navigate to the Admin tab.
+Select the  Users pane.
+Click the  Users section.
+Locate the user to be edited by filtering users in one of the following ways:
+In the Name field, enter the user's username or display name.
+In the Authentication ID field, enter the user's authentication ID.
+In the In group field, enter the group name of the user's group.
+If you enter a group name in the In group field, you have the option to change if Only immediate members is set to On or not. If set to On, only users that are assigned directly to the specified group are returned, as opposed to if user A is assigned indirectly to group B because A belongs to group C, which is assigned to group B.
+
+In the Email field, enter the user's email.
+In the User UUID field, enter the user's UUID which is a unique, non-sequential ID for a user.
+Note: You need correct permissions to either view or search by this field. For more information, see User Permissions.
+From the Role drop-down list, select the user's relevant role.
+You can click  to reset the filter.
+
+You must ensure that all users that are affected by email login (either because they are in a role where email login has been enabled, or because email login has been enabled for all users on VideoManager) have an email address associated with them on VideoManager.
+
+Click Find.
+Next to the user to be edited, click  Go to user.
+In the Email notifications field, enter the email address to which login links for the user should be sent.
+Click Save user.
+From now on, whenever users try to log on to VideoManager, a link is sent to their email inbox. The users must click this link in the same browser that has VideoManager open. The link only works once. To request a new code, users must re-enter their password on VideoManager and try to log on again.
+Disabling Login by Email
+Procedure:
+Navigate to the Admin tab.
+Select the  Users pane.
+Click the  Two Factor Authentication section.
+From the Use email to login drop-down list, select Disabled.
+Click Save settings.
+From now on, users only need to enter their password to log on.
+Configuring User Self Service
+It is possible to administer users manually from the Users section, which includes creating new users, and resetting existing users' passwords. However, it is also possible for workers to create their own users and reset their own passwords. Both password resetting and self-service registration are conducted through links sent via email. Administrators can configure for how many minutes these links are valid.
+Procedure:
+Navigate to the Admin tab.
+Select the  Users pane.
+Click the  User Self Service section.
+In the Verification expiry time (mins) field, enter the number of minutes after which a link should expire and must be re-sent.
+Click Save settings.
+Enabling Users to Reset Their Own Passwords
+All users on VideoManager must have a password to log on. If they forget their password, administrators can reset it for them. However, if configured, users can also reset their own passwords via email.
+Prerequisites:
+
+Users can reset their passwords if one of two conditions are met:
+
+lf users have been created with self-registration, they can reset their passwords by default because there is an email address associated with their account (their username).
+If users have not been created with self-registration, that is, they have been created manually, or have been imported with the user import tool, an administrator must associate an email address with their account.
+To associate an email address with the user's account, perform the following actions:
+
+Navigate to the Admin tab.
+Select the  Users pane.
+Click the  Users section.
+Next to the user to be edited, click  Go to user.
+In the Email notifications field, enter an email address for the user.
+Click Save user.
+Procedure:
+Ensure that emails are enabled.
+For more information, see Configuring Email Settings.
+Navigate to the Admin tab.
+Select the  Users pane.
+Click the  User Self Service section.
+In the Password reset section, set Password reset enabled to On.
+In the Password reset templates section, configure what users will see on the login pane and in the password reset email:
+In the Password reset label field, enter the text that users will see if they enter their password incorrectly.
+For example, Forgotten password?
+In the Link label field, enter the text that users must click in order to send a password reset email.
+The text will be displayed on the login page alongside the Password reset label field.
+
+For example, Reset here. or Click here.
+
+In the Subject field, enter the text to be set as the subject line for the password reset email.
+In the Content field, enter the content of the password reset email.
+${loginUrl} and ${completionUrl} can be utilised to direct users to the login pane and password reset pane, respectively.
+Click Save settings.
+Enabling Users to Complete Self-Registration
+Every worker who is required to utilise VideoManager must have a unique user profile. Usually, administrators must create these users for them. However, if configured, workers can create their own users.
+Prerequisites:
+
+Ensure that emails are enabled.
+For more information, see Configuring Email Settings.
+
+Ensure that at least one group to which new users can be added exists.
+For more information, see Creating, Editing, and Deleting Groups.
+
+Procedure:
+Navigate to the Admin tab.
+Select the  Users pane.
+Click the  User Self Service section.
+In the Self-Registration section, set Registration enabled to On.
+In the Registration email patterns section, configure which email address patterns will be accepted by VideoManager when user creation is requested. To add an address pattern, perform the following actions:
+Note: Requests from email addresses with patterns not listed here will be ignored.
+Click  Add email pattern.
+In the Email pattern field, enter an email address format.
+In the Group assignment field, enter a previously existing group to which all users with this specific email address format should be added.
+Click Create.
+In the Registration terms section, configure what non-registered workers will see from the login pane:
+In the Registration label field, enter the text that will appear.
+For example, Unregistered? or Don't have an account?
+In the Link label field, enter the text for the link that workers must click in order to send a registration email.
+For example, Register here. or Click here.
+
+In the Registration terms field, enter the text to which non-registered workers must agree before they can create their new user profile.
+Optional: Customize the text using any of the following settings:
+Tip: Clicking the buttons again undoes the changes.
+Name	Description
+ Bold	Any text within the asterisks appears bold.
+ Italic	Any text within the underscores appears italicised.
+ Heading	Any text on the same line as ### appears as heading text.
+ URL/Link	You are prompted to enter a hyperlink. A link description can be entered in the square brackets.
+ Image	You can enter a URL for an image. An image description can be entered in the brackets.
+ Unordered List	Any text after the hyphen appears as part of a bullet point list. Unordered List must be clicked for each individual list entry.
+ Ordered List	Any text after the hyphen appears as part of a numbered list. Ordered List must be clicked for each individual list entry. The numbers appear in order once the message is previewed.
+ Code	Any text within the single quotation marks appears as code.
+ Quote	Any text on the same line as > appears as a quote.
+By clicking  Preview, a previewable version becomes visible. You can edit the text by clicking  Preview again.
+
+In the Welcome email section, configure what workers will see when they open a welcome email from VideoManager:
+In the Subject field, enter the text to be set as the subject line for the welcome email.
+In the Content field, enter the content of the welcome email.
+<loginUrl> and <completionUrl> can be utilised to direct users to the login pane and user profile creation pane, respectively.
+<siteHost> can be utilised to insert the name of the specific VideoManager instance.
+
+In the Already registered email section, configure what workers will see if an email address they entered for self-registration is already associated with a user on VideoManager:
+In the Subject field, enter the text to be set as the subject line for the email.
+In the Content field, enter the content of the email.
+<loginUrl> can be utilised to direct users to the login pane.
+
+<siteHost> can be utilised to insert the name of the specific VideoManager instance.
+
+Click Save settings.
+Built-In User Import Tool Configuration
+You can import multiple users/groups simultaneously from another instance of VideoManager, which can be done from the  User Import Settings section of the  Users pane, in the Admin tab.
+For more information, see the document Built-in User Import Tool Guide [ED-012-229], which can be found in the installation location of VideoManager, in the userimporttool folder.
+
+Alternatively, you can manually export and import your entire user and group database via the Users section. For more information, see Exporting and Importing Users and Groups.
+
+Configuring Login Settings
+VideoManager can be configured to display a login warning and mandatory user agreement which users must agree to before they are permitted to log on.
+Procedure:
+Navigate to the Admin tab.
+Select the  Users pane.
+Click the  Login Settings section.
+You can configure any of the following sections:
+Login warning enables administrators to create a login warning on VideoManager. The login warning will be displayed at the bottom of the login pane of VideoManager, and will be visible to all users before they access VideoManager.
+User agreement enables administrators to create a user agreement. All users on VideoManager must agree to this text when logging on for the first time.
+Session settings controls how frequently users must log on to VideoManager if the system is inactive.
+Privilege elevation controls privilege escalation settings. For more information, see Configuring Privilege Escalation.
+Optional: If you want to configure the Login warning section, perform the following actions:
+In the Warning text field, enter the warning.
+Customize the text using any of the following settings:
+Name	Description
+ Bold	Any text within the asterisks appears bold.
+ Italic	Any text within the underscores appears italicised.
+ Heading	Any text on the same line as ### appears as heading text.
+ URL/Link	You are prompted to enter a hyperlink. A link description can be entered in the square brackets.
+ Image	You can enter a URL for an image. An image description can be entered in the brackets.
+ Unordered List	Any text after the hyphen appears as part of a bullet point list. Unordered List must be clicked for each individual list entry.
+ Ordered List	Any text after the hyphen appears as part of a numbered list. Ordered List must be clicked for each individual list entry. The numbers appear in order once the message is previewed.
+ Code	Any text within the single quotation marks appears as code.
+ Quote	Any text on the same line as > appears as a quote.
+Clicking the buttons again undoes the changes.
+
+By clicking  Preview, a previewable version becomes visible. You can edit the text by clicking  Preview again.
+
+Click Save settings.
+Optional: If you want to configure the User agreement section, perform the following actions:
+Set Users must accept agreement on login to On.
+In the Agreement title field, enter a title for the user agreement.
+In the Agreement text field, enter the text for the user agreement.
+The text could be legal information, or terms and conditions.
+Customize the text using any of the following settings:
+Name	Description
+ Bold	Any text within the asterisks appears bold.
+ Italic	Any text within the underscores appears italicised.
+ Heading	Any text on the same line as ### appears as heading text.
+ URL/Link	You are prompted to enter a hyperlink. A link description can be entered in the square brackets.
+ Image	You can enter a URL for an image. An image description can be entered in the brackets.
+ Unordered List	Any text after the hyphen appears as part of a bullet point list. Unordered List must be clicked for each individual list entry.
+ Ordered List	Any text after the hyphen appears as part of a numbered list. Ordered List must be clicked for each individual list entry. The numbers appear in order once the message is previewed.
+ Code	Any text within the single quotation marks appears as code.
+ Quote	Any text on the same line as > appears as a quote.
+Clicking the buttons again undoes the changes.
+
+By clicking  Preview, a previewable version becomes visible. You can edit the text by clicking  Preview again.
+
+In the Acceptance text field, enter an agreement text.
+Users must agree to this text before logging on to VideoManager.
+Note: The default text is I agree to the terms and have read the User Agreement.
+Click Save settings.
+Optional: If you want to configure the Session settings section, perform the following actions:
+In the Session timeout field, enter the number of minutes for which VideoManager must be inactive, after which the user must log on again.
+Click Save settings.

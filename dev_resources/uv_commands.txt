@@ -1,0 +1,103 @@
+UV Package Manager - Key Commands Reference
+============================================
+
+PROJECT INITIALIZATION
+----------------------
+uv init                          # Initialize new project in current directory
+uv init --python 3.13.9          # Initialize with specific Python version
+uv init project-name             # Initialize in new directory
+
+
+DEPENDENCY MANAGEMENT
+---------------------
+uv add package-name              # Add package to project
+uv add "package-name>=1.0.0"     # Add package with version constraint
+uv add --dev package-name        # Add development dependency
+uv remove package-name           # Remove package from project
+uv sync                          # Install/update all dependencies from pyproject.toml
+uv lock                          # Update lock file without installing
+
+
+RUNNING CODE
+------------
+uv run python script.py          # Run Python script in project environment
+uv run pytest                    # Run command/tool in project environment
+uv run main.py                   # Run main.py (if executable)
+
+
+PYTHON VERSION MANAGEMENT
+-------------------------
+uv python install 3.13.9         # Install specific Python version
+uv python list                   # List installed Python versions
+uv python pin 3.13.9             # Pin project to specific Python version
+
+
+VIRTUAL ENVIRONMENT
+-------------------
+uv venv                          # Create virtual environment in .venv
+uv venv --python 3.13.9          # Create venv with specific Python version
+.venv\Scripts\activate           # Activate venv (Windows PowerShell)
+deactivate                       # Deactivate venv
+
+
+PACKAGE INSPECTION
+------------------
+uv pip list                      # List installed packages
+uv pip show package-name         # Show package details
+uv pip freeze                    # Show all packages with versions
+
+
+PROJECT INFO
+------------
+uv tree                          # Show dependency tree
+uv pip check                     # Verify installed packages have compatible dependencies
+
+
+UPGRADING
+---------
+uv self update                   # Update uv itself
+uv add --upgrade package-name    # Upgrade specific package
+uv sync --upgrade                # Upgrade all packages
+
+
+USEFUL FLAGS
+------------
+--verbose                        # Show detailed output
+--quiet                          # Suppress output
+--no-cache                       # Disable cache for operation
+
+
+COMMON WORKFLOWS
+----------------
+
+# Start new project
+uv init --python 3.13.9
+uv sync
+
+# Add packages for this project
+uv add fastmcp
+uv add langchain langchain-google-vertexai
+uv add openai anthropic
+
+# Run your code
+uv run python main.py
+
+# Add dev tools
+uv add --dev pytest black mypy
+
+# Update everything
+uv sync --upgrade
+
+
+TIPS
+----
+- uv automatically creates/uses .venv directory
+- pyproject.toml defines your project dependencies
+- uv.lock ensures reproducible installs
+- Much faster than pip (10-100x)
+- No need to manually activate venv when using "uv run"
+
+
+DOCUMENTATION
+-------------
+Official docs: https://docs.astral.sh/uv/

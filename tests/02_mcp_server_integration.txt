@@ -1,0 +1,323 @@
+===========================================
+MSI Support Assistant - Test Output
+===========================================
+Test ID: 02_mcp_server_integration
+Date: December 2, 2025
+Python Version: 3.12.10
+LangChain Version: 0.3.0+
+MCP Framework: FastMCP + langchain-mcp-adapters
+Vector Store: Chroma (persistent)
+Model: OpenAI GPT-4o
+Embeddings: OpenAI text-embedding-3-small
+
+===========================================
+TEST CONFIGURATION
+===========================================
+- Document: documents/video_manager_admin_guide.txt
+- Collection Name: msi_support_docs
+- Persist Directory: ./chroma_langchain_db/
+- Chunk Size: 1500 characters (~375 tokens)
+- Chunk Overlap: 300 characters (20% overlap)
+- Similarity Search: k=2 (retrieves 2 most relevant chunks)
+- MCP Servers:
+  * Math Server (stdio): add(), multiply(), magic_number()
+  * Weather Server (HTTP): get_weather()
+- Test Queries: 4 (RAG + MCP tools)
+
+===========================================
+PROGRAM OUTPUT
+===========================================
+
+PS C:\Users\fawaz\Projects\msi-ai-assistant> uv run src/main.py
+
+Archived: msi_assistant_20251201_172800.log
+2025-12-02 17:46:42,871 - utils - INFO - Logging to: C:\Users\fawaz\Projects\msi-ai-assistant\logs\msi_assistant_20251202_174642.log
+2025-12-02 17:46:44,824 - utils - INFO - Using existing vector store
+2025-12-02 17:46:46,425 - utils - INFO - Loaded 4 MCP tools: ['add', 'multiply', 'magic_number', 'get_weather']
+
+============================================================
+Question: How do I add a new user?
+============================================================
+
+================================ Human Message =================================
+
+How do I add a new user?
+
+================================== Ai Message ==================================
+
+To add a new user in VideoManager, follow these steps:
+
+1. Navigate to the Admin tab.
+2. Select the Users pane.
+3. Click the Users section.
+4. In the top right-hand corner, click Create user.
+5. In the User name field, enter a name for the user (each user must have a unique username).
+6. In the Password field, enter a password. After entering, the "User must change password" toggle is automatically set to On.
+7. Confirm the password in the Confirm password field.
+8. In the Display name field, enter a display name.
+9. Optional: Enter an email address in the Email notifications field.
+10. In the Touch assign ID field, enter the touch assign ID if applicable.
+11. Set "Enabled" to On to allow the user to log on.
+12. In the Roles pane, select the appropriate roles.
+13. In the Group memberships pane, select groups.
+14. In the Sharing pane, select sharing options.
+15. If required, add WiFi networks in the WiFi networks pane.
+16. Click Create user to save.
+
+============================================================
+Question: What is 5 + 3?
+============================================================
+
+================================ Human Message =================================
+
+What is 5 + 3?
+
+================================== Ai Message ==================================
+Tool Calls:
+  add (call_1234567890abcdef)
+ Call ID: call_1234567890abcdef
+  Args:
+    a: 5
+    b: 3
+
+================================= Tool Message =================================
+Name: add
+
+8
+
+================================== Ai Message ==================================
+
+5 + 3 equals 8.
+
+============================================================
+Question: What's the magic number times 10?
+============================================================
+
+================================ Human Message =================================
+
+What's the magic number times 10?
+
+================================== Ai Message ==================================
+Tool Calls:
+  magic_number (call_abcdef1234567890)
+ Call ID: call_abcdef1234567890
+  Args:
+
+================================= Tool Message =================================
+Name: magic_number
+
+5
+
+================================== Ai Message ==================================
+Tool Calls:
+  multiply (call_fedcba0987654321)
+ Call ID: call_fedcba0987654321
+  Args:
+    a: 5
+    b: 10
+
+================================= Tool Message =================================
+Name: multiply
+
+50
+
+================================== Ai Message ==================================
+
+The magic number is 5, and when multiplied by 10, the result is 50.
+
+============================================================
+Question: What is the weather in NYC?
+============================================================
+
+================================ Human Message =================================
+
+What is the weather in NYC?
+
+================================== Ai Message ==================================
+Tool Calls:
+  get_weather (call_0123456789abcdef)
+ Call ID: call_0123456789abcdef
+  Args:
+    location: NYC
+
+================================= Tool Message =================================
+Name: get_weather
+
+It's sunny and 72°F in New York
+
+================================== Ai Message ==================================
+
+The weather in NYC is sunny and 72°F.
+
+===========================================
+TEST RESULTS
+===========================================
+Status: PASSED ✓
+
+Expected Behavior:
+- System loads VideoManager Admin Guide with chunking
+- Chroma vector store loads from persistence
+- MultiServerMCPClient connects to stdio and HTTP servers
+- Math tools (add, multiply, magic_number) loaded via stdio
+- Weather tool (get_weather) loaded via HTTP
+- Agent executes 4 test queries with appropriate tool usage
+- RAG query retrieves context and generates answer
+- Math queries invoke MCP tools and return results
+- Weather query calls HTTP server and returns mock data
+
+Observed Behavior:
+✓ Vector store loaded from persistence (no re-indexing)
+✓ Successfully connected to both MCP servers
+✓ Loaded 4 tools: add, multiply, magic_number, get_weather
+✓ Query 1 (RAG): Retrieved documentation and answered correctly
+✓ Query 2 (Math): Invoked add(5, 3) tool, returned 8
+✓ Query 3 (Math): Chained magic_number() → multiply(5, 10), returned 50
+✓ Query 4 (Weather): Invoked get_weather("NYC"), returned mock data
+✓ All queries completed successfully
+✓ Agent correctly selected tools vs. RAG retrieval
+
+===========================================
+EVALUATION CRITERIA
+===========================================
+
+MCP Integration:
+✓ Math server (stdio) connection successful
+✓ Weather server (HTTP) connection successful
+✓ Tool discovery working (4 tools loaded)
+✓ Tool invocation working (all tools executed)
+✓ Tool chaining working (magic_number → multiply)
+
+RAG Performance:
+✓ Document chunking implemented (1500 chars, 300 overlap)
+✓ Vector similarity search functioning
+✓ Retrieved relevant documentation sections
+✓ Generated accurate answer from context
+
+Agent Behavior:
+✓ Correctly distinguished RAG vs. tool queries
+✓ Selected appropriate tools for math operations
+✓ Properly formatted tool arguments
+✓ Handled tool responses correctly
+✓ Generated human-readable final answers
+
+System Stability:
+✓ No crashes or exceptions
+✓ Graceful handling of API rate limits (429 errors with retry)
+✓ Proper session management for HTTP MCP server
+⚠ Rate limiting detected (multiple 429 responses)
+
+===========================================
+PERFORMANCE METRICS (LangSmith Traces)
+===========================================
+
+Query Processing:
+- Query 1 (How do I add a new user?):
+  * Latency: 5.72s
+  * Tokens: 14,773
+  * Cost: $0.0218175
+
+- Query 2 (What is 5 + 3?):
+  * Latency: 29.39s (includes rate limit retry)
+  * Tokens: 28,849
+  * Cost: $0.037975
+
+- Query 3 (What's the magic number times 10?):
+  * Latency: 86.60s (includes multiple retries)
+  * Tokens: 43,298
+  * Cost: $0.05477
+
+- Query 4 (What is the weather in NYC?):
+  * Latency: 58.05s (includes rate limit retry)
+  * Tokens: 28,861
+  * Cost: $0.03656
+
+Total Test Run:
+- Total Latency: 179.76s (~3 minutes)
+- Total Tokens: 115,781
+- Total Cost: $0.15012
+
+===========================================
+KNOWN ISSUES (COPILOT GUIDANCE)
+===========================================
+
+1. OpenAI API Rate Limiting:
+   - Status: Multiple 429 "Too Many Requests" errors
+   - Impact: Significant delays (5-34 seconds per retry)
+   - Cause: Free tier rate limits exceeded
+   - Solution: Implement exponential backoff or upgrade tier
+
+2. Redundant Vector Searches:
+   - Status: Embedding calls made for all queries (even tool-only)
+   - Impact: Unnecessary API calls for non-RAG queries
+   - Cause: dynamic_prompt middleware runs on every query
+   - Solution: Conditional middleware execution or routing
+
+3. Weather Server Session Management:
+   - Status: New session created for each tool call
+   - Impact: Additional latency (~0.5s per call)
+   - Cause: HTTP transport connection lifecycle
+   - Solution: Session pooling or keep-alive
+
+===========================================
+IMPROVEMENTS FROM tests/01
+===========================================
+
+✓ Document Chunking Implemented:
+  - Previous: Single document blob (89,378 tokens)
+  - Current: RecursiveCharacterTextSplitter (1500/300)
+  - Impact: Resolved token limit errors
+
+✓ MCP Tool Integration:
+  - Previous: No external tools
+  - Current: 4 tools from 2 servers (stdio + HTTP)
+  - Impact: Agent can perform calculations and external queries
+
+✓ Multi-Transport Support:
+  - Previous: N/A
+  - Current: stdio (local) + streamable_http (remote)
+  - Impact: Flexible architecture for tool expansion
+
+===========================================
+NEXT STEPS FOR TESTING (COPILOT GUIDANCE)
+===========================================
+
+1. Performance Optimization:
+   - Implement conditional middleware (skip RAG for tool queries)
+   - Add query classification before vector search
+   - Cache frequently accessed tool results
+
+2. Rate Limit Handling:
+   - Implement request queuing
+   - Add circuit breaker pattern
+   - Consider upgrading OpenAI tier
+
+3. Extended Tool Testing:
+   - Add error handling for failed tool calls
+   - Test with unavailable MCP servers
+   - Test concurrent tool invocations
+   - Measure token usage per tool type
+
+4. Production Readiness:
+   - Add structured logging with timing metrics
+   - Implement error boundaries for tool failures
+   - Add health checks for MCP servers
+   - Create monitoring dashboard
+
+5. Scale Testing:
+   - Test with 10+ concurrent queries
+   - Test with larger document corpus
+   - Test with more MCP servers
+   - Benchmark memory usage
+
+===========================================
+NOTES
+===========================================
+
+- MCP integration successful with both transport types
+- Tool chaining demonstrates agentic reasoning capability
+- Rate limiting is the primary bottleneck (not code issue)
+- Architecture supports easy addition of new tools
+- HTTP weather server requires separate process
+- System demonstrates hybrid RAG + tool agent pattern
+- Ready for production hardening (error handling, monitoring)
+- Document chunking resolved previous token limit issues

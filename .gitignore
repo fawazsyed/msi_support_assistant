@@ -1,15 +1,18 @@
-# Keep files local - do not push to GitHub
-*.txt
-!README.md
-
 # Commit message file (local only)
 COMMIT.md
 
 # Claude Code instructions (workspace-specific, keep local)
 CLAUDE.md
 
+# Working notes and scratch files (keep local)
+futureconsiderations.txt
+commands.txt
+brandmessaging.txt
+brandmessaging.md
+
 # Vector database (generated locally, too large for git)
 chroma_langchain_db/
+chroma_langchain_db_msi_docs/
 
 # Log files (generated locally during runs)
 logs/

@@ -58,12 +58,14 @@ import { LangchainApiService } from '../../services/langchain-api.service';
       flex-direction: column;
       background-color: #f8f9fa;
       overflow: hidden;
+      min-height: 0; /* Critical for flexbox scrolling */
     }
 
     .chat-header {
       background-color: white;
       border-bottom: 1px solid #e0e0e0;
       padding: 1.5rem 2rem;
+      flex-shrink: 0; /* Prevent header from shrinking */
     }
 
     .chat-header h2 {

@@ -21,7 +21,7 @@ import { ToolCall } from '../../models/message.model';
         <div class="tool-call">
           <div class="tool-name">{{ tool.name }}</div>
 
-          @if (Object.keys(tool.args).length > 0) {
+          @if (hasArgs(tool.args)) {
             <div class="tool-args">
               <strong>Arguments:</strong>
               <pre>{{ formatArgs(tool.args) }}</pre>
@@ -111,8 +111,9 @@ import { ToolCall } from '../../models/message.model';
 export class ToolCallsComponent {
   toolCalls = input.required<ToolCall[]>();
 
-  // Expose Object to template
-  Object = Object;
+  hasArgs(args: Record<string, unknown>): boolean {
+    return Object.keys(args).length > 0;
+  }
 
   formatArgs(args: Record<string, unknown>): string {
     return JSON.stringify(args, null, 2);

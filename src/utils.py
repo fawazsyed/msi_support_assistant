@@ -45,7 +45,7 @@ def setup_logging(project_root: Path, keep_recent: int = 10) -> logging.Logger:
     return logger
 
 
-def _cleanup_old_logs(logs_dir: Path, archive_dir: Path, keep_recent: int):
+def _cleanup_old_logs(logs_dir: Path, archive_dir: Path, keep_recent: int) -> None:
     """
     Archive old logs, keeping only the most recent ones.
     

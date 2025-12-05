@@ -4,8 +4,8 @@ Mock Identity Provider implementation with JWT formatting
 Installs:
 pip install uvicorn fastapi jwt pydantic rsa
 
-Run (from mcp-prototype/src):
-uvicorn mock_IDP:app --host 127.0.0.1 --port 9400
+Run (from root directory):
+uv run python -m uvicorn src.mock_idp:app --host 127.0.0.1 --port 9400
 """
 
 import base64
@@ -103,7 +103,7 @@ app = FastAPI()
 # Class to match registration request structure
 class RegistrationRequest(BaseModel):
     redirect_uris: list[str]
-    client_name: str = Field(default = "client")
+    client_name: str = Field(default="client")  # Reserved for future stateful implementation
 
 # ENDPOINTS
 @app.get("/.well-known/oauth-authorization-server")
@@ -219,8 +219,7 @@ async def register(request: RegistrationRequest):
 
 @app.post("/token")
 async def token(
-    code: str = Form(...),
-    resource: str = Form(...)
+    code: str = Form(...)
 ):
     # Retrieve auth code
     if code not in auth_codes:
@@ -236,12 +235,19 @@ async def token(
     if user_info is None:
         raise HTTPException(status_code = 401, detail = "user id not found")
 
+    # Multi-audience token: valid for ALL MCP servers (SSO)
     access_claims = {
         "iss": ISSUER_URL,
-        "aud": resource,
+        "aud": [
+            "http://127.0.0.1:9000",  # Ticketing server
+            "http://127.0.0.1:9001",  # Organizations server
+            # Add new MCP server audiences here
+        ],
         "sub": user_info["sub"],
         "roles": user_info["roles"],
-        "organizations": user_info["organizations"]
+        "organizations": user_info["organizations"],
+        "exp": int(time.time()) + EXP_TIME,  # Token expiration
+        "iat": int(time.time())  # Issued at
     }
 
     access_token = jwt.encode(
