@@ -194,7 +194,7 @@ async def get_organizations() -> Dict[str, Any]:
     Description: Retrieves all information for organizations.
     Use case: Use this tool to retrieve organization information for processing.
     Permissable roles: admin.
-    Arguments: organization (required, string).
+    Arguments: None.
     Returns: Dict[str, Any] containing users or an error message.
     """
     
