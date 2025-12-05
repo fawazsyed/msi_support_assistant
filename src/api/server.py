@@ -17,8 +17,10 @@ import uvicorn
 # Local imports
 from src.core.utils import setup_logging
 from src.core.agent import initialize_agent_components
-from src.core.config import LOG_KEEP_RECENT
+from src.core.config import LOG_KEEP_RECENT, ENABLE_RAGAS_COLLECTION, RAGAS_DATA_DIR
 from src.models import ChatMessage, ChatRequest
+from src.observability import RagasDataCollector
+from datetime import datetime
 
 # Get project root (parent of src/api/)
 PROJECT_ROOT = Path(__file__).parent.parent.parent
@@ -50,6 +52,36 @@ async def startup_event() -> None:
         logger=logger
     )
     logger.info("Agent initialization complete")
+    
+    # Initialize Ragas data collector if enabled
+    if ENABLE_RAGAS_COLLECTION:
+        app.state.collector = RagasDataCollector()
+        app.state.interaction_count = 0
+        app.state.auto_save_interval = 10  # Save every 10 interactions
+        
+        # Create data directory
+        data_dir = PROJECT_ROOT / RAGAS_DATA_DIR
+        data_dir.mkdir(parents=True, exist_ok=True)
+        
+        logger.info(f"Ragas data collection enabled. Auto-save every {app.state.auto_save_interval} interactions.")
+        logger.info(f"Data will be saved to {data_dir}")
+    else:
+        app.state.collector = None
+        logger.info("Ragas data collection disabled")
+
+
+@app.on_event("shutdown")
+async def shutdown_event() -> None:
+    """Save any remaining collected data on shutdown"""
+    if hasattr(app.state, 'collector') and app.state.collector is not None:
+        try:
+            if len(app.state.collector) > 0:
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                data_file = PROJECT_ROOT / RAGAS_DATA_DIR / f"agent_data_{timestamp}.json"
+                app.state.collector.save(data_file)
+                logger.info(f"Saved {len(app.state.collector)} samples on shutdown to {data_file}")
+        except Exception as e:
+            logger.error(f"Failed to save data on shutdown: {e}")
 
 
 # Dependency injection functions
@@ -64,6 +96,39 @@ async def get_agent():
 async def root() -> dict[str, str]:
     """Health check endpoint"""
     return {"status": "ok", "message": "MSI AI Assistant API is running"}
+
+
+@app.post("/api/admin/save-data")
+async def save_collected_data() -> dict[str, Any]:
+    """
+    Manually trigger save of collected Ragas data.
+    Useful before shutdown or for periodic backups.
+    """
+    if not hasattr(app.state, 'collector') or app.state.collector is None:
+        return {"status": "disabled", "message": "Ragas data collection is not enabled"}
+    
+    if len(app.state.collector) == 0:
+        return {"status": "ok", "message": "No data to save", "samples": 0}
+    
+    try:
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        data_file = PROJECT_ROOT / RAGAS_DATA_DIR / f"agent_data_{timestamp}.json"
+        app.state.collector.save(data_file)
+        
+        sample_count = len(app.state.collector)
+        app.state.collector.clear()
+        
+        logger.info(f"Manual save: {sample_count} samples saved to {data_file}")
+        
+        return {
+            "status": "ok",
+            "message": f"Saved {sample_count} samples",
+            "file": str(data_file.name),
+            "samples": sample_count
+        }
+    except Exception as e:
+        logger.error(f"Failed to save data: {e}")
+        return {"status": "error", "message": str(e)}
 
 
 @app.post("/api/chat")
@@ -178,6 +243,42 @@ async def chat_stream(request: ChatRequest, agent=Depends(get_agent)) -> Streami
             }
             logger.info(f"Sending final content (length: {len(full_content)}, events: {event_count})")
             yield f"data: {json.dumps(final_content_data)}\n\n"
+
+            # Collect data for evaluation if enabled
+            if hasattr(app.state, 'collector') and app.state.collector is not None:
+                try:
+                    # Reconstruct full message history from the agent
+                    conversation_messages = []
+                    for msg in chunk.get("messages", []):
+                        conversation_messages.append(msg)
+                    
+                    if conversation_messages:
+                        # Add as multi-turn sample
+                        app.state.collector.add_multi_turn(
+                            messages=conversation_messages,
+                            metadata={
+                                "query": last_message,
+                                "timestamp": datetime.now().isoformat(),
+                                "event_count": event_count,
+                            }
+                        )
+                        app.state.interaction_count += 1
+                        logger.info(f"Collected interaction #{app.state.interaction_count} with {len(conversation_messages)} messages")
+                        
+                        # Auto-save if interval reached
+                        if app.state.interaction_count % app.state.auto_save_interval == 0:
+                            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                            data_file = PROJECT_ROOT / RAGAS_DATA_DIR / f"agent_data_{timestamp}.json"
+                            app.state.collector.save(data_file)
+                            logger.info(f"Auto-saved {len(app.state.collector)} samples to {data_file}")
+                            
+                            # Clear collector after save to avoid memory buildup
+                            app.state.collector.clear()
+                            logger.info("Cleared collector after auto-save")
+                    else:
+                        logger.warning("No messages to collect for this interaction")
+                except Exception as e:
+                    logger.error(f"Failed to collect interaction data: {e}")
 
             # Signal completion
             done_event = json.dumps({'type': 'done'})
