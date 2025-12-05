@@ -5,13 +5,13 @@
 Your project now has GitHub Actions CI/CD with:
 
 ### Python Backend (`.github/workflows/python-ci.yml`)
-- **Triggers**: Push to `main`/`owens/observability`, PRs to `main`
+- **Triggers**: Push to `main`, PRs to `main`
 - **Jobs**:
   - **Test**: Runs pytest on all tests
   - **Lint**: Placeholder for code quality checks
 
 ### Angular Frontend (`.github/workflows/angular-ci.yml`)
-- **Triggers**: Push to `main`/`owens/observability`, PRs to `main`
+- **Triggers**: Push to `main`, PRs to `main`
 - **Jobs**:
   - Lint, test (with Chrome headless), production build
   - Uploads build artifacts
