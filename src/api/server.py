@@ -9,7 +9,6 @@ from typing import Any
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
-from pydantic import BaseModel
 from pathlib import Path
 import json
 from dotenv import load_dotenv
@@ -19,6 +18,7 @@ import uvicorn
 from src.core.utils import setup_logging
 from src.core.agent import initialize_agent_components
 from src.core.config import LOG_KEEP_RECENT
+from src.models import ChatMessage, ChatRequest
 
 # Get project root (parent of src/api/)
 PROJECT_ROOT = Path(__file__).parent.parent.parent
@@ -39,14 +39,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-class ChatMessage(BaseModel):
-    role: str
-    content: str
-
-
-class ChatRequest(BaseModel):
-    messages: list[ChatMessage]
 
 
 @app.on_event("startup")

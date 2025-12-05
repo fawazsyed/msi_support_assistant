@@ -34,7 +34,7 @@ class MSIDocsRAGAgent(BaseRAGAgent):
 
     @property
     def document_path(self) -> Path:
-        return self.project_root / "documents" / "video_manager_admin_guide.txt"
+        return self.project_root / "data" / "documents" / "video_manager_admin_guide.txt"
 
     def create_tool(self) -> Tool:
         """Create the search_msi_documentation tool"""

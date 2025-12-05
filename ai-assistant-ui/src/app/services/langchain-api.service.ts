@@ -1,5 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 import { Message, Conversation } from '../models/message.model';
+import { environment } from '../../environments/environment';
 
 /**
  * Service for communicating with LangChain backend
@@ -9,13 +10,44 @@ import { Message, Conversation } from '../models/message.model';
   providedIn: 'root'
 })
 export class LangchainApiService {
-  private readonly apiUrl = 'http://localhost:8000/api';
+  private readonly apiUrl = environment.apiUrl;
 
   // State signals
   currentConversation = signal<Conversation | null>(null);
   conversations = signal<Conversation[]>([]);
   isLoading = signal(false);
   error = signal<string | null>(null);
+
+  /**
+   * Check if the backend API is healthy and ready
+   */
+  async checkHealth(): Promise<boolean> {
+    try {
+      const response = await fetch(`${this.apiUrl.replace('/api', '')}/`, {
+        method: 'GET',
+      });
+      return response.ok;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Wait for backend to be ready (with timeout)
+   */
+  async waitForBackend(timeoutMs: number = 30000): Promise<boolean> {
+    const startTime = Date.now();
+
+    while (Date.now() - startTime < timeoutMs) {
+      if (await this.checkHealth()) {
+        return true;
+      }
+      // Wait 500ms before next check
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
+
+    return false;
+  }
 
   /**
    * Send a message and stream the response from the backend
