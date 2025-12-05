@@ -11,9 +11,9 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 # Local imports
-from utils import setup_logging
-from agent_setup import initialize_agent_components
-from config import LOG_KEEP_RECENT
+from src.core.utils import setup_logging
+from src.core.agent import initialize_agent_components
+from src.core.config import LOG_KEEP_RECENT
 
 # Get project root (parent of src/)
 PROJECT_ROOT = Path(__file__).parent.parent
