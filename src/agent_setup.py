@@ -14,7 +14,7 @@ Usage:
 """
 
 from pathlib import Path
-from typing import Tuple, List, Optional, Any
+from typing import List, Optional, Any
 import logging
 
 from langchain_openai import OpenAIEmbeddings
