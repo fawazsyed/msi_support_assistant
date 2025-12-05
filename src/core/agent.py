@@ -5,7 +5,7 @@ This module contains all the shared logic for creating the LangChain agent.
 Both api_server.py and main.py use these functions to avoid code duplication.
 
 Usage:
-    from agent_setup import initialize_agent_components
+    from src.core.agent import initialize_agent_components
 
     agent, mcp_client = await initialize_agent_components(
         project_root=PROJECT_ROOT,
@@ -26,7 +26,7 @@ from langchain_core.tools import Tool
 from langchain_mcp_adapters.client import MultiServerMCPClient
 from fastmcp.client.auth import OAuth
 
-from config import (
+from src.core.config import (
     DEFAULT_MODEL,
     DEFAULT_MODEL_PROVIDER,
     RATE_LIMIT_REQUESTS_PER_SECOND,
@@ -40,7 +40,7 @@ from config import (
     MCP_ORGANIZATIONS_URL,
     MCP_ISSUER_URL,
 )
-from rag_agents import create_default_rag_tools
+from src.rag.base import create_default_rag_tools
 
 
 def create_rate_limiter() -> InMemoryRateLimiter:
