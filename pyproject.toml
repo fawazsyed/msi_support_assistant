@@ -19,3 +19,8 @@ dependencies = [
     "uvicorn>=0.32.0",
     "sse-starlette>=2.2.1",
 ]
+
+[dependency-groups]
+dev = [
+    "honcho>=2.0.0",
+]

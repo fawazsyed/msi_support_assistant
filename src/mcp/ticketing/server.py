@@ -37,7 +37,7 @@ AUTH = RemoteAuthProvider(
 
 # Create FastMCP server instance
 mcp = FastMCP(
-    name = "Ticketing MCP Server",
+    name = "msi-ticketing",
     auth = AUTH  # RemoteAuthProvider already contains the token verifier
 )
 

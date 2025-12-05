@@ -14,7 +14,9 @@ import time
 import uuid
 from fastapi import FastAPI, Form, Query, HTTPException
 from fastapi.responses import RedirectResponse, HTMLResponse
-from pydantic import BaseModel, Field
+
+# Local imports
+from src.models.auth import RegistrationRequest
 
 ISSUER_URL = "http://127.0.0.1:9400"
 
@@ -99,11 +101,6 @@ jwk = {
 
 # Create API
 app = FastAPI()
-
-# Class to match registration request structure
-class RegistrationRequest(BaseModel):
-    redirect_uris: list[str]
-    client_name: str = Field(default="client")  # Reserved for future stateful implementation
 
 # ENDPOINTS
 @app.get("/.well-known/oauth-authorization-server")
