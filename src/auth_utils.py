@@ -20,8 +20,11 @@ def check_roles(allowed_roles: List[str]) -> bool:
         True if user has at least one of the allowed roles, False otherwise
     """
     token: AccessToken | None = get_access_token()
-    roles = token.claims.get("roles") if token else None
-
+    if not token:
+        return False
+    roles = token.claims.get("roles")
+    if not roles:
+        return False
     return any(role in roles for role in allowed_roles)
 
 
