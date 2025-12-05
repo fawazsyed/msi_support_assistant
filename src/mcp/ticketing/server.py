@@ -2,7 +2,7 @@
 MCP server for managing support tickets
 
 Run (from project root):
-uv run fastmcp run src/ticketing_mcp.py --port 9000
+uv run fastmcp run src/mcp/ticketing/server.py --port 9000
 """
 
 import pathlib
@@ -14,12 +14,12 @@ from fastmcp.server.auth import RemoteAuthProvider
 from fastmcp.server.auth.providers.jwt import JWTVerifier
 from pydantic import AnyHttpUrl
 
-from auth_utils import check_roles, get_username, get_user_roles, get_user_organizations
+from src.auth.utils import check_roles, get_username, get_user_roles, get_user_organizations
 
 SERVER_URL = "http://127.0.0.1:9000"
 ISSUER_URL = "http://127.0.0.1:9400"
-SCRIPT_DIR = pathlib.Path(__file__).resolve().parent
-DB_TICKET = SCRIPT_DIR / "ticket.db"
+PROJECT_ROOT = pathlib.Path(__file__).resolve().parent.parent.parent.parent
+DB_TICKET = PROJECT_ROOT / "data" / "databases" / "ticket.db"
 
 # JWT Token Verifier
 VERIFIER = JWTVerifier(

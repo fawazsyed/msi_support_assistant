@@ -1,8 +1,8 @@
 """
-MCP server for managing support tickets
+MCP server for managing organizations
 
 Run (from project root):
-uv run fastmcp run src/organizations_mcp.py --port 9001
+uv run fastmcp run src/mcp/organizations/server.py --port 9001
 """
 
 import pathlib
@@ -14,13 +14,13 @@ from fastmcp.server.auth import RemoteAuthProvider
 from fastmcp.server.auth.providers.jwt import JWTVerifier
 from pydantic import AnyHttpUrl
 
-from auth_utils import check_roles, get_username
+from src.auth.utils import check_roles, get_username
 
 SERVER_URL = "http://127.0.0.1:9001"
 ISSUER_URL = "http://127.0.0.1:9400"
-SCRIPT_DIR = pathlib.Path(__file__).resolve().parent
-DB_USERS = SCRIPT_DIR / "users.db"
-DB_ORGANIZATIONS = SCRIPT_DIR / "organizations.db"
+PROJECT_ROOT = pathlib.Path(__file__).resolve().parent.parent.parent.parent
+DB_USERS = PROJECT_ROOT / "data" / "databases" / "users.db"
+DB_ORGANIZATIONS = PROJECT_ROOT / "data" / "databases" / "organizations.db"
 
 # JWT Token Verifier
 VERIFIER = JWTVerifier(
