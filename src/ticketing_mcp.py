@@ -101,7 +101,7 @@ async def create_ticket(
     """
     Description: Submits a ticket describing user issues.
     Use case: Use this tool to submit a ticket for review on behalf of the user.
-    Permissable roles: Any role
+    Permissable roles: Any roles.
     Arguments: title (required, string), description (required, string).
     Returns: A string conveying the success of the ticket creation.
     """

@@ -20,6 +20,7 @@ SERVER_URL = "http://127.0.0.1:9001"
 ISSUER_URL = "http://127.0.0.1:9400"
 SCRIPT_DIR = pathlib.Path(__file__).resolve().parent
 DB_USERS = SCRIPT_DIR / "users.db"
+DB_ORGANIZATIONS = SCRIPT_DIR / "organizations.db"
 
 # JWT Token Verifier
 VERIFIER = JWTVerifier(
@@ -46,10 +47,10 @@ mcp = FastMCP(
     token_verifier = VERIFIER
 )
 
+# Helper functions
 def check_roles(allowed_roles: List[str]):
     token: AccessToken | None = get_access_token()
     roles = token.claims.get("roles") if token else None
-
     return any(role in roles for role in allowed_roles)
 
 def get_username():
@@ -186,3 +187,41 @@ async def compare_user_permissions(
         return {"error": "Error with request"}
 
     return permissions_comparison
+
+@mcp.tool()
+async def get_organizations() -> Dict[str, Any]:
+    """
+    Description: Retrieves all information for organizations.
+    Use case: Use this tool to retrieve organization information for processing.
+    Permissable roles: admin.
+    Arguments: organization (required, string).
+    Returns: Dict[str, Any] containing users or an error message.
+    """
+    
+    if not check_roles(["admin"]):
+        return {"error": "User does not have permission to use this tool"}
+    
+    response_json = {}
+    try:
+        connection = sqlite3.connect(DB_ORGANIZATIONS)
+        connection.row_factory = sqlite3.Row
+        cursor = connection.cursor()
+
+        cursor.execute("SELECT name, aware_service, status, region FROM organizations")
+
+        organizations = cursor.fetchall()
+        connection.close()
+        
+        for org in organizations:
+            key = org['name'] 
+            response_json[key] = {
+                "name": org['name'],
+                "aware_service": org['aware_service'],
+                "status": org['status'],
+                "region": org['region']
+            }
+
+    except:
+        return {"error": "Error with request"}
+    
+    return response_json
