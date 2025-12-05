@@ -2,7 +2,7 @@
 MCP server for managing support tickets
 
 Run (from project root):
-uv run fastmcp run src/ticketing_mcp.py --port 9001
+uv run fastmcp run src/organizations_mcp.py --port 9001
 """
 
 import pathlib
